@@ -2,9 +2,111 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>De auto laad</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-test
+<div class="dashboard-container">
+    <header>
+        <div class="menu-icon">&#9776;</div>
+        <h1>APP</h1>
+    </header>
+
+    <section class="main-content">
+        <div class="load-status-card">
+            <h2>De auto laad...</h2>
+            <div class="bar-chart-container">
+                <canvas id="emissionChart"></canvas>
+                <div class="time-labels">
+                    <span>NU</span>
+                    <span>8:00</span>
+                    <span>+12u</span>
+                </div>
+            </div>
+            <div class="info-boxes">
+                <div class="info-box">
+                    <p class="label">Laden...</p>
+                </div>
+                <div class="info-box">
+                    <p class="value">2kg</p>
+                    <p class="label">Snel</p>
+                </div>
+                <div class="info-box">
+                    <p class="value">47.8kg</p>
+                    <p class="label">Afgelopen</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="placeholder">
+        </div>
+    </section>
+</div>
+
+<script>
+    async function fetchData() {
+        try {
+            const response = await fetch('/dashboard/data');
+            const data = await response.json();
+
+            if (data.error) {
+                console.error("Error fetching data:", data.error);
+                return;
+            }
+
+            updateChart(data.bar_data);
+            // You can update other parts of the UI with data.latest_ef if needed
+            console.log("Latest Emission Factor:", data.latest_ef);
+
+        } catch (error) {
+            console.error("Fetch error:", error);
+        }
+    }
+
+    function updateChart(barData) {
+        const ctx = document.getElementById('emissionChart').getContext('2d');
+        const labels = barData.map(item => item.label);
+        const heights = barData.map(item => item.height);
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Emission Factor (Scaled)',
+                    data: heights,
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)', // Customize color
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        display: false // Hide y-axis labels
+                    },
+                    x: {
+                        grid: {
+                            display: false // Hide x-axis grid lines
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false // Hide the legend
+                    }
+                }
+            }
+        });
+    }
+
+    // Fetch data initially and then maybe periodically
+    fetchData();
+    // Optionally, you can set an interval to update the data regularly:
+    // setInterval(fetchData, 5000); // Update every 5 seconds
+</script>
 </body>
 </html>

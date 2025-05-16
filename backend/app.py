@@ -6,14 +6,13 @@ import os
 
 load_dotenv()
 
-app = Flask(__name__, template_folder='../frontend/templates')
+app = Flask(__name__, template_folder='../frontend/templates', static_folder='../frontend/static')
 
 @app.route('/')
 def home():
     return render_template('index.html')
 
-
-@app.route("/dashboard")
+@app.route("/dashboard/data")
 def get_utilization_data():
     try:
         # API configuration
@@ -35,27 +34,24 @@ def get_utilization_data():
         response.raise_for_status()
         data = response.json()
 
-        # Process results
-        formatted_data = []
-        for item in data.get('hydra:member', []):
-            # Format emission factor to 3 decimal places
-            ef = round(item.get('emissionfactor', 0), 3)
+        # Process results for the bar chart
+        bar_data = []
+        if 'hydra:member' in data:
+            num_items = len(data['hydra:member'])
+            for i, item in enumerate(data['hydra:member']):
+                ef = round(item.get('emissionfactor', 0), 3)
+                # Basic scaling for the bar height (you might need to adjust this)
+                height = ef * 100  # Example scaling
+                bar_data.append({'height': height, 'label': f'{i+1}'})
 
-            # Parse and format timestamps
-            valid_from = datetime.fromisoformat(item['validfrom'])
-            valid_to = datetime.fromisoformat(item['validto'])
+        # Process results for the load information
+        if data.get('hydra:member'):
+            latest_data = data['hydra:member'][-1] # Assuming the last item is the most recent
+            emission_factor = round(latest_data.get('emissionfactor', 0), 3)
+        else:
+            emission_factor = 0
 
-            # Format time range with 24:00 for midnight
-            from_time = valid_from.strftime("%H:%M")
-            to_hour = valid_to.hour
-            to_time = "24:00" if to_hour == 0 else f"{to_hour:02}:00"
-
-            formatted_data.append({
-                'emission_factor': ef,
-                'time_range': f"{from_time} - {to_time}"
-            })
-
-        return jsonify(formatted_data)
+        return jsonify({'bar_data': bar_data, 'latest_ef': emission_factor})
 
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"API request failed: {str(e)}"}), 500
