@@ -1,5 +1,5 @@
-from flask import Flask, jsonify, render_template
-from datetime import datetime
+from flask import Flask, jsonify, render_template, request
+from datetime import datetime, timezone
 import requests
 from dotenv import load_dotenv
 import os
@@ -7,6 +7,10 @@ import os
 load_dotenv()
 
 app = Flask(__name__, template_folder='../frontend/templates', static_folder='../frontend/static')
+
+app_data = {
+    'car_charging_hours': 1.0
+}
 
 @app.route('/')
 def home():
@@ -29,7 +33,7 @@ def get_utilization_data():
         }
 
         response = requests.get(url, headers=headers, params=params)
-        response.raise_for_status()
+        response.raise_for_status() # Will raise an HTTPError for bad responses (4XX or 5XX)
         data = response.json()
 
         bar_data = []
@@ -54,7 +58,25 @@ def get_utilization_data():
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"API request failed: {str(e)}"}), 500
     except Exception as e:
-        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+        print(f"An error occurred: {str(e)}")
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
+@app.route('/set_car_hours', methods=['POST'])
+def set_car_hours():
+    try:
+        data = request.get_json()
+        hours = data.get('hours')
+
+        if hours is None or not isinstance(hours, (int, float)) or hours < 0:
+            return jsonify({"error": "Invalid or missing 'hours' value. Must be a non-negative number."}), 400
+
+        app_data['car_charging_hours'] = float(hours)
+        print(f"Car charging hours set to: {app_data['car_charging_hours']}")
+        return jsonify({"message": "Car charging hours updated successfully.", "current_hours": app_data['car_charging_hours']}), 200
+    except Exception as e:
+        print(f"Error in /set_car_hours: {str(e)}")
+        return jsonify({"error": "An internal error occurred."}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
