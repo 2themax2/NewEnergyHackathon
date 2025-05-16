@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Pulsing Smart Schuko Socket</title>
+</head>
+<body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#f2f2f2;font-family:Arial,sans-serif;">
+
+  <div style="text-align:center;">
+    <!-- Socket SVG -->
+    <svg viewBox="0 0 220 220" width="220" height="220" style="display:block;margin:0 auto 15px;">
+      <defs>
+        <!-- Pulsing green gradient -->
+        <radialGradient id="grad-on" cx="50%" cy="50%" r="60%">
+          <stop offset="0%" stop-color="#e0ffe0">
+            <animate attributeName="stop-color" values="#e0ffe0;#a0ff80;#e0ffe0" dur="2s" repeatCount="indefinite"/>
+          </stop>
+          <stop offset="100%" stop-color="#76ff03">
+            <animate attributeName="stop-color" values="#76ff03;#40c000;#76ff03" dur="2s" repeatCount="indefinite"/>
+          </stop>
+        </radialGradient>
+      </defs>
+
+      <!-- Outer bezel -->
+      <rect x="5" y="5" width="210" height="210" rx="20" ry="20"
+            style="fill:#ebebeb;stroke:#333;stroke-width:4;"/>
+      <!-- Inner inset -->
+      <rect x="25" y="25" width="170" height="170" rx="12" ry="12"
+            style="fill:#f8f8f8;stroke:#666;stroke-width:2;"/>
+
+      <!-- Socket circle -->
+      <circle id="socket-bg" cx="110" cy="110" r="55"
+              style="fill:#ebebeb;stroke:#333;stroke-width:3;transition:all 0.3s ease;"/>
+
+      <!-- Top grounding notch -->
+      <rect x="102" y="55" width="16" height="6" rx="3" ry="3"
+            style="fill:#333;"/>
+      <!-- Bottom grounding notch -->
+      <rect x="102" y="159" width="16" height="6" rx="3" ry="3"
+            style="fill:#333;"/>
+
+      <!-- Live & Neutral prong holes (brighter), now vertically centered at y=110 -->
+      <circle id="hole1" cx="90" cy="110" r="8" style="fill:#555;"/>
+      <circle id="hole2" cx="130" cy="110" r="8" style="fill:#555;"/>
+    </svg>
+
+    <!-- Status text -->
+    <p id="status-text" style="margin:8px 0;font-size:1.2em;color:#333;">Power Off</p>
+
+    <!-- Control buttons -->
+    <button style="margin:4px;padding:8px 16px;font-size:1em;cursor:pointer;"
+      onclick="
+        document.getElementById('socket-bg').style.fill = 'url(#grad-on)';
+        document.getElementById('socket-bg').style.filter = 'drop-shadow(0 0 15px rgba(118,255,3,0.7))';
+        document.getElementById('status-text').innerText = 'Power On';
+      ">
+      Turn On
+    </button>
+    <button style="margin:4px;padding:8px 16px;font-size:1em;cursor:pointer;"
+      onclick="
+        document.getElementById('socket-bg').style.fill = '#ebebeb';
+        document.getElementById('socket-bg').style.filter = 'none';
+        document.getElementById('status-text').innerText = 'Power Off';
+      ">
+      Turn Off
+    </button>
+  </div>
+
+</body>
+</html>
