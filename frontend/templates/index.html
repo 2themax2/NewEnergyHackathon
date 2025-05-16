@@ -8,38 +8,33 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<div class="dashboard-container">
+<div class="container">
     <header>
-        <div class="menu-icon">&#9776;</div>
+        <button class="menu-button">&#9776;</button>
         <h1>APP</h1>
     </header>
 
-    <section class="main-content">
-        <div class="load-status-card">
-            <h2>De auto laad...</h2>
-            <div class="bar-chart-container">
-                <canvas id="emissionChart"></canvas>
-                <div class="time-labels">
-                    <span>NU</span>
-                    <span>8:00</span>
-                    <span>+12u</span>
-                </div>
+    <section class="load-status">
+        <h2>De auto laad...</h2>
+        <div class="chart-container">
+            <canvas id="emissionChart"></canvas>
+        </div>
+        <div class="info-grid">
+            <div class="info-box">
+                <p class="label">Laden...</p>
             </div>
-            <div class="info-boxes">
-                <div class="info-box">
-                    <p class="label">Laden...</p>
-                </div>
-                <div class="info-box">
-                    <p class="value">2kg</p>
-                    <p class="label">Snel</p>
-                </div>
-                <div class="info-box">
-                    <p class="value">47.8kg</p>
-                    <p class="label">Afgelopen</p>
-                </div>
+            <div class="info-box">
+                <p class="value">2kg</p>
+                <p class="label">Snel</p>
+            </div>
+            <div class="info-box">
+                <p class="value">47.8kg</p>
+                <p class="label">Afgelopen</p>
             </div>
         </div>
+    </section>
 
+    <section class="placeholder-section">
         <div class="placeholder">
         </div>
     </section>
@@ -56,8 +51,8 @@
                 return;
             }
 
-            updateChart(data.bar_data);
-            // You can update other parts of the UI with data.latest_ef if needed
+            const first24HoursData = data.bar_data.slice(0, 24);
+            updateChart(first24HoursData);
             console.log("Latest Emission Factor:", data.latest_ef);
 
         } catch (error) {
@@ -77,36 +72,36 @@
                 datasets: [{
                     label: 'Emission Factor (Scaled)',
                     data: heights,
-                    backgroundColor: 'rgba(75, 192, 192, 0.8)', // Customize color
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
                     borderColor: 'rgba(75, 192, 192, 1)',
                     borderWidth: 1
                 }]
             },
             options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true,
-                        display: false // Hide y-axis labels
+                        display: false
                     },
                     x: {
                         grid: {
-                            display: false // Hide x-axis grid lines
+                            display: false
                         }
                     }
                 },
                 plugins: {
                     legend: {
-                        display: false // Hide the legend
+                        display: false
                     }
                 }
             }
         });
     }
 
-    // Fetch data initially and then maybe periodically
     fetchData();
-    // Optionally, you can set an interval to update the data regularly:
-    // setInterval(fetchData, 5000); // Update every 5 seconds
+    // setInterval(fetchData, 5000);
 </script>
 </body>
 </html>

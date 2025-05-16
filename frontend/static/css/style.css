@@ -2,20 +2,12 @@ body {
     font-family: sans-serif;
     margin: 0;
     background-color: #f4f4f4;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+    color: #333;
+    line-height: 1.6;
 }
 
-.dashboard-container {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+.container {
     padding: 20px;
-    width: 80%;
-    max-width: 600px;
-    box-sizing: border-box;
 }
 
 header {
@@ -26,91 +18,117 @@ header {
     margin-bottom: 20px;
 }
 
-.menu-icon {
+.menu-button {
     font-size: 1.5em;
     margin-right: 10px;
     color: #555;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
 }
 
 header h1 {
     margin: 0;
-    font-size: 1.8em;
-    color: #333;
+    font-size: 1.5em;
 }
 
-.main-content {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.load-status-card {
-    background-color: #f9f9f9;
-    border: 1px solid #eee;
+.load-status {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     padding: 15px;
-    border-radius: 6px;
+    margin-bottom: 20px;
 }
 
-.load-status-card h2 {
+.load-status h2 {
     margin-top: 0;
-    font-size: 1.4em;
-    color: #333;
+    font-size: 1.2em;
     margin-bottom: 10px;
+    color: #333;
 }
 
-.bar-chart-container {
+.chart-container {
     position: relative;
     margin-bottom: 15px;
+    height: 150px; /* Fixed height for better mobile view */
 }
 
 #emissionChart {
-    width: 100%;
-    height: auto; /* Adjust height as needed */
+    width: 100% !important;
+    height: 100% !important;
+    display: block; /* Prevents extra space below canvas */
 }
 
-.time-labels {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -20px;
-    display: flex;
-    justify-content: space-between;
-    color: #777;
-    font-size: 0.8em;
-}
-
-.info-boxes {
+.info-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); /* Responsive grid */
     gap: 10px;
 }
 
 .info-box {
-    background-color: #fff;
-    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
     padding: 10px;
     border-radius: 4px;
     text-align: center;
 }
 
 .info-box .value {
-    font-size: 1.2em;
+    font-size: 1em;
     font-weight: bold;
     color: #333;
     margin-bottom: 5px;
 }
 
 .info-box .label {
-    font-size: 0.9em;
+    font-size: 0.8em;
     color: #777;
 }
 
-.placeholder {
-    background-color: #f9f9f9;
-    border: 1px solid #eee;
-    padding: 20px;
-    border-radius: 6px;
+.placeholder-section {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    padding: 15px;
     text-align: center;
     color: #777;
-    font-size: 0.9em;
+    font-size: 0.8em;
+}
+
+/* Larger screens */
+@media (min-width: 600px) {
+    .container {
+        max-width: 600px;
+        margin: 20px auto;
+    }
+
+    header h1 {
+        font-size: 1.8em;
+    }
+
+    .load-status h2 {
+        font-size: 1.4em;
+    }
+
+    .chart-container {
+        height: 200px;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .info-box .value {
+        font-size: 1.2em;
+    }
+
+    .info-box .label {
+        font-size: 0.9em;
+    }
+
+    .placeholder-section {
+        padding: 20px;
+        font-size: 0.9em;
+    }
 }
