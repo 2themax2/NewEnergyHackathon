@@ -84,7 +84,10 @@ def get_utilization_data():
 
         latest_ef = round(data['hydra:member'][-1].get('emissionfactor', 0), 3) if data.get('hydra:member') else 0
 
-        best_charging_slots = best_time_slots(bar_data[(get_socket_state() + 2):30], app_data.get('car_charging_hours', 0))
+        if get_socket_state() != None:
+            best_charging_slots = best_time_slots(bar_data[(get_socket_state() + 2):30], app_data.get('car_charging_hours', 0))
+        else: 
+            best_charging_slots = None
 
         return jsonify({
             'bar_data': bar_data,
