@@ -73,7 +73,6 @@ def api_set_device_connected():
     data = request.get_json(silent=True) or {}
     new_state = data['device_connected']
     set_connected_device(new_state)
-    requests.post('http://127.0.0.1:5000/api/set_device_connection_time', json={"time_connected": time_connected})
     return jsonify({'device_connected': new_state})
 
 
