@@ -1,6 +1,7 @@
 
 /* src/app/components/header/header.component.css */
 .app-header {
+  box-sizing: border-box; /* Add this line */
   background-color: var(--surface-color); /* Slightly different from main background */
   padding: 0 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
