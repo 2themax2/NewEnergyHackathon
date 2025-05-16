@@ -36,7 +36,7 @@ def get_utilization_data():
         if 'hydra:member' in data:
             for item in data['hydra:member']:
                 ef = round(item.get('emissionfactor', 0), 3)
-                height = ef * 100
+                height = ef
                 valid_from = item.get('validfrom')
                 valid_to = item.get('validto')
 

@@ -1,118 +1,155 @@
 body {
-    font-family: sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
-    background-color: #f4f4f4;
+    background: linear-gradient(135deg, #e0f7fa, #c5e1e6);
     color: #333;
     line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
-.container {
-    padding: 20px;
+.app-container {
+    background-color: #fff;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }
 
-header {
+.app-header {
+    background: linear-gradient(to right, #00bcd4, #00acc1);
+    color: white;
+    padding: 15px 20px;
     display: flex;
     align-items: center;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 20px;
+    justify-content: flex-start;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .menu-button {
-    font-size: 1.5em;
-    margin-right: 10px;
-    color: #555;
+    font-size: 1.8em;
+    margin-right: 15px;
+    color: white;
     background: none;
     border: none;
     padding: 0;
     cursor: pointer;
 }
 
-header h1 {
+.app-header h1 {
+    margin: 0;
+    font-size: 1.7em;
+    font-weight: 500;
+}
+
+.app-content {
+    padding: 20px;
+}
+
+.dashboard-section {
+    margin-bottom: 25px;
+}
+
+.section-header {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #80deea;
+}
+
+.section-header h2 {
     margin: 0;
     font-size: 1.5em;
+    color: #00acc1;
+    font-weight: 600;
 }
 
-.load-status {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+.load-status-card, .placeholder-card {
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
     padding: 15px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
-.load-status h2 {
+.load-status-card h3 {
     margin-top: 0;
-    font-size: 1.2em;
+    font-size: 1.1em;
+    color: #555;
     margin-bottom: 10px;
-    color: #333;
 }
 
 .chart-container {
     position: relative;
     margin-bottom: 15px;
-    height: 150px; /* Fixed height for better mobile view */
+    height: 180px; /* Adjusted height */
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 #emissionChart {
     width: 100% !important;
     height: 100% !important;
-    display: block; /* Prevents extra space below canvas */
+    display: block;
 }
 
 .info-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); /* Responsive grid */
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
     gap: 10px;
 }
 
 .info-box {
-    background-color: #f9f9f9;
-    border: 1px solid #eee;
-    padding: 10px;
-    border-radius: 4px;
+    background-color: #e0f7fa;
+    border-radius: 8px;
+    padding: 12px;
     text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
 }
 
 .info-box .value {
-    font-size: 1em;
+    font-size: 1.1em;
     font-weight: bold;
-    color: #333;
+    color: #00acc1;
     margin-bottom: 5px;
 }
 
 .info-box .label {
-    font-size: 0.8em;
+    font-size: 0.85em;
     color: #777;
 }
 
-.placeholder-section {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    padding: 15px;
+.placeholder-card {
     text-align: center;
     color: #777;
+    font-size: 0.9em;
+    padding: 20px;
+}
+
+.app-footer {
+    background-color: #e0f7fa;
+    color: #555;
+    text-align: center;
+    padding: 15px 20px;
     font-size: 0.8em;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 /* Larger screens */
 @media (min-width: 600px) {
-    .container {
-        max-width: 600px;
-        margin: 20px auto;
+    .app-container {
+        margin: 30px auto;
     }
 
-    header h1 {
-        font-size: 1.8em;
+    .app-header h1 {
+        font-size: 2em;
     }
 
-    .load-status h2 {
-        font-size: 1.4em;
+    .section-header h2 {
+        font-size: 1.7em;
     }
 
     .chart-container {
-        height: 200px;
+        height: 220px;
     }
 
     .info-grid {
@@ -127,8 +164,8 @@ header h1 {
         font-size: 0.9em;
     }
 
-    .placeholder-section {
-        padding: 20px;
-        font-size: 0.9em;
+    .placeholder-card {
+        padding: 25px;
+        font-size: 1em;
     }
 }

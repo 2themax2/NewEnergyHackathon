@@ -3,41 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>De auto laad</title>
+    <title>Smart Energy Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<div class="container">
-    <header>
+<div class="app-container">
+    <header class="app-header">
         <button class="menu-button">&#9776;</button>
-        <h1>APP</h1>
+        <h1>Smart Energy</h1>
     </header>
 
-    <section class="load-status">
-        <h2>De auto laad...</h2>
-        <div class="chart-container">
-            <canvas id="emissionChart"></canvas>
-        </div>
-        <div class="info-grid">
-            <div class="info-box">
-                <p class="label">Laden...</p>
+    <main class="app-content">
+        <section class="dashboard-section car-section">
+            <div class="section-header">
+                <h2>Car Charging</h2>
             </div>
-            <div class="info-box">
-                <p class="value">2kg</p>
-                <p class="label">Snel</p>
+            <div class="load-status-card">
+                <h3>Charging Status</h3>
+                <div class="chart-container">
+                    <canvas id="emissionChart"></canvas>
+                </div>
+                <div class="info-grid">
+                    <div class="info-box">
+                        <p class="label">Status</p>
+                        <p class="value">Charging...</p>
+                    </div>
+                    <div class="info-box">
+                        <p class="label">Speed</p>
+                        <p class="value">Fast</p>
+                    </div>
+                    <div class="info-box">
+                        <p class="label">Total Charged</p>
+                        <p class="value">47.8 kg</p>
+                    </div>
+                </div>
             </div>
-            <div class="info-box">
-                <p class="value">47.8kg</p>
-                <p class="label">Afgelopen</p>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="placeholder-section">
-        <div class="placeholder">
-        </div>
-    </section>
+        <section class="dashboard-section home-battery-section">
+            <div class="section-header">
+                <h2>Home Battery</h2>
+            </div>
+            <div class="placeholder-card">
+                <p>Information about your home battery will be displayed here.</p>
+            </div>
+        </section>
+
+        <section class="dashboard-section bike-battery-section">
+            <div class="section-header">
+                <h2>Bike Battery</h2>
+            </div>
+            <div class="placeholder-card">
+                <p>Information about charging your bike battery will be displayed here.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <p>&copy; 2025 Smart Energy Solutions</p>
+    </footer>
 </div>
 
 <script>
@@ -51,7 +76,7 @@
                 return;
             }
 
-            const first24HoursData = data.bar_data.slice(0, 24);
+            const first24HoursData = data.bar_data.slice(6, 30);
             updateChart(first24HoursData);
             console.log("Latest Emission Factor:", data.latest_ef);
 
@@ -72,8 +97,8 @@
                 datasets: [{
                     label: 'Emission Factor (Scaled)',
                     data: heights,
-                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 1
                 }]
             },
