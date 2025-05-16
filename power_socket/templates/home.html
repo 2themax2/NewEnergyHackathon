@@ -66,11 +66,14 @@
 </html>
 
 <script>
-  async function updateUI(on = false, device_connected = false) {
+  async function updateUI() {
     const bg = document.getElementById('socket-bg');
     const status_power = document.getElementById('status-text-power');
     const status_device = document.getElementById('status-text-device');
-    if (on) {
+    const curr_power_state = await getPowerState()
+    const curr_device_connected = await getDeviceConnected()
+    console.log(curr_power_state, curr_device_connected)
+    if (curr_power_state) {
       bg.style.fill = 'url(#grad-on)';
       bg.style.filter = 'drop-shadow(0 0 15px rgba(118,255,3,0.7))';
       status_power.innerText = 'Power On';
@@ -80,7 +83,7 @@
       status_power.innerText = 'Power Off';
     }
 
-    if (device_connected) {
+    if (curr_device_connected) {
       status_device.innerText = 'Device connected';
     } else {
       status_device.innerText = 'Device not connected';
@@ -101,36 +104,48 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ on: true })
     });
-    const { on } = await res.json();
-    await updateUI(on, undefined);
+    await res.json();
+    await updateUI();
   });
+
   document.getElementById('turn-off-btn').addEventListener('click', async () => {
     const res = await fetch('/api/power', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ on: false })
     });
-    const { on } = await res.json();
-    await updateUI(on, undefined);
+    await res.json();
+    await updateUI();
   });
+
   document.getElementById('device-btn').addEventListener('click', async () => {
-    const getRes = await fetch('/api/device', {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    const { device_connected } = await getRes.json();
-
-    const newState = !device_connected
-
+    const newState = ! await getDeviceConnected()
     const postRes = await fetch('/api/device', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ device_connected: newState })
     })
     const result = await postRes.json();
-
     console.log('Server now thinks device_connected =', result.device_connected);
-    await updateUI(undefined, newState);
+    await updateUI();
   })
+
+  async function getDeviceConnected() {
+    const getRes = await fetch('/api/device', {
+      method: 'GET',
+      headers: {'Content-Type': 'application/json'},
+    });
+    const device_connected = await getRes.json();
+    return device_connected.device_connected;
+  }
+
+  async function getPowerState() {
+    const powerState = await fetch('/api/power', {
+      method: 'GET',
+      headers: {'Content-Type': 'application/json'},
+    });
+    const power_state = await powerState.json();
+    return power_state.on;
+  }
 </script>
 
