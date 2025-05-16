@@ -13,6 +13,8 @@ app_data = {
     'hard_charge_end_time': '04:00'
 }
 
+device_connection_time = None
+
 def best_time_slots(data, num_slots_to_pick):
     if not data or num_slots_to_pick <= 0:
         return []
@@ -22,7 +24,7 @@ def best_time_slots(data, num_slots_to_pick):
     return chronological_best_slots
 
 def get_socket_state():
-    endpoint_url = "http://localhost:5001/api/device"
+    endpoint_url = "http://127.0.0.1:5001/api/device"
     try:
         # Make a GET request
         response = requests.get(endpoint_url)
@@ -39,7 +41,7 @@ def get_socket_state():
         return
 
 def post_power_state(power_state : bool):
-    endpoint_url = "http://localhost:5001/api/power"
+    endpoint_url = "http://127.0.0.1:5001/api/power"
     try:
         # Make a GET request
         response = requests.post(endpoint_url, json= {"on" : power_state})
@@ -164,6 +166,16 @@ def set_hard_charge_end_time():
         print(f"Error in /set_hard_charge_end_time: {str(e)}")
         return jsonify({"error": "An internal error occurred."}), 500
 
+@app.route('/api/set_device_connection_time', methods=['POST'])
+def set_device_connection_time():
+    global device_connection_time
+    data = request.get_json() or {}
+    time_connected = data.get('time_connected')
+    if not time_connected:
+        device_connection_time = None
+    else:
+        device_connection_time = time_connected
+    return jsonify({"message": "Device connection time updated successfully."}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
