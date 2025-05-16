@@ -28,7 +28,7 @@ def get_socket_state():
         response = requests.get(endpoint_url)
         response.raise_for_status()  # Raise exception for HTTP errors
         data = response.json()
-        print( data.get("device_connected"))
+        return data.get("time_connected")
 
         # Or make a POST request with some data
         # response = requests.post(endpoint_url, json={"key": "value"})
@@ -84,7 +84,7 @@ def get_utilization_data():
 
         latest_ef = round(data['hydra:member'][-1].get('emissionfactor', 0), 3) if data.get('hydra:member') else 0
 
-        best_charging_slots = best_time_slots(bar_data[6:30], app_data.get('car_charging_hours', 0))
+        best_charging_slots = best_time_slots(bar_data[(get_socket_state() + 2):30], app_data.get('car_charging_hours', 0))
 
         return jsonify({
             'bar_data': bar_data,
