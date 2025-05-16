@@ -13,13 +13,13 @@ app_data = {
     'hard_charge_end_time': '07:00'
 }
 
-# example: best_slots = best_time_slots(bar_data, app_data['car_charging_hours'])
-# return: [{'height': 0.029, 'label': '10:00-11:00'}, {'height': 0.024, 'label': '11:00-12:00'}, {'height': 0.024, 'label': '12:00-13:00'}, {'height': 0.028, 'label': '13:00-14:00'}, {'height': 0.028, 'label': '14:00-15:00'}]
-def best_time_slots(data, hours):
-    sorted_data = sorted(data, key=lambda x: x['height'])
-    filter =  sorted_data[:int(hours)]
-    sorted_data = sorted(filter, key=lambda x: x['label'])
-    return sorted_data
+def best_time_slots(data, num_slots_to_pick):
+    if not data or num_slots_to_pick <= 0:
+        return []
+    sorted_data_by_emission = sorted(data, key=lambda x: x['height'])
+    best_emission_slots = sorted_data_by_emission[:int(num_slots_to_pick)]
+    chronological_best_slots = sorted(best_emission_slots, key=lambda x: x['label'])
+    return chronological_best_slots
 
 
 @app.route("/dashboard")
@@ -30,7 +30,6 @@ def home():
 @app.route("/dashboard/data")
 def get_utilization_data():
     try:
-        # API configuration
         url = "https://api.ned.nl/v1/utilizations"
         headers = {'X-AUTH-TOKEN': os.getenv('api'), 'accept': 'application/ld+json'}
         params = {
@@ -45,10 +44,12 @@ def get_utilization_data():
         }
 
         response = requests.get(url, headers=headers, params=params)
-        response.raise_for_status() # Will raise an HTTPError for bad responses (4XX or 5XX)
+        response.raise_for_status()
         data = response.json()
 
         bar_data = []
+        slot_duration_minutes = 5
+
         if 'hydra:member' in data:
             for item in data['hydra:member']:
                 ef = round(item.get('emissionfactor', 0), 3)
@@ -65,18 +66,21 @@ def get_utilization_data():
 
         latest_ef = round(data['hydra:member'][-1].get('emissionfactor', 0), 3) if data.get('hydra:member') else 0
 
+        best_charging_slots = best_time_slots(bar_data[6:30], app_data.get('car_charging_hours', 0))
+
         return jsonify({
             'bar_data': bar_data,
             'latest_ef': latest_ef,
             'car_charging_hours': app_data.get('car_charging_hours'),
-            'hard_charge_end_time': app_data.get('hard_charge_end_time')
+            'hard_charge_end_time': app_data.get('hard_charge_end_time'),
+            'best_charging_slots': best_charging_slots
         })
 
-
     except requests.exceptions.RequestException as e:
+        print(f"API request failed: {str(e)}")
         return jsonify({"error": f"API request failed: {str(e)}"}), 500
     except Exception as e:
-        print(f"An error occurred: {str(e)}")
+        print(f"An error occurred in get_utilization_data: {str(e)}")
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
 
 @app.route('/set_car_hours', methods=['POST'])
@@ -85,10 +89,17 @@ def set_car_hours():
         data = request.get_json()
         hours = data.get('hours')
 
-        if hours is None or not isinstance(hours, (int, float)) or hours < 0:
-            return jsonify({"error": "Invalid or missing 'hours' value. Must be a non-negative number."}), 400
+        if hours is None:
+            return jsonify({"error": "Missing 'hours' value."}), 400
+        try:
+            hours_float = float(hours)
+            if hours_float < 0:
+                return jsonify({"error": "Invalid 'hours' value. Must be a non-negative number."}), 400
+        except ValueError:
+            return jsonify({"error": "Invalid 'hours' value. Must be a number."}), 400
 
-        app_data['car_charging_hours'] = float(hours)
+
+        app_data['car_charging_hours'] = hours_float
         print(f"Car charging hours set to: {app_data['car_charging_hours']}")
         return jsonify({"message": "Car charging hours updated successfully.", "current_hours": app_data['car_charging_hours']}), 200
     except Exception as e:

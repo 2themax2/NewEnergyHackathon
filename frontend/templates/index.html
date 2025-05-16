@@ -38,19 +38,17 @@
                 <div class="info-grid">
                     <div class="info-box">
                         <p class="label">Status</p>
-                        <p class="value">Waiting...</p>
-                    </div>
+                        <p class="value">Waiting...</p> </div>
                     <div class="info-box">
                         <p class="label">CO2 saved today</p>
-                        <p class="value">0.2 kg</p>
-                    </div>
+                        <p class="value">0.2 kg</p> </div>
                     <div class="info-box">
                         <p class="label">Total CO2 saved</p>
                         <p class="value">26.8 kg</p> </div>
                 </div>
                 <div class="input-group">
                     <label for="carHours">Charging Hours:</label>
-                    <input type="number" id="carHours" name="carHours" value="1" min="0">
+                    <input type="number" id="carHours" name="carHours" value="1" min="0" step="1">
                     <button onclick="setCarChargingHours()">Set Car Hours</button>
                 </div>
             </div>
@@ -91,6 +89,108 @@
 </div>
 
 <script>
+    let emissionChartInstance = null;
+    let lastFetchedCarHours = 1;
+
+    const lightningBoltPlugin = {
+        id: 'lightningBoltPlugin',
+        afterDatasetsDraw(chart, args, pluginOptions) {
+            const { ctx, data, scales: { x, y } } = chart;
+            const bestLabels = pluginOptions.bestLabels || [];
+
+            if (bestLabels.length === 0) return;
+
+            ctx.save();
+            ctx.font = '18px Arial';
+            ctx.fillStyle = 'orange';
+            ctx.textAlign = 'center';
+
+            const datasetMeta = chart.getDatasetMeta(0);
+
+            data.labels.forEach((label, index) => {
+                if (bestLabels.includes(label)) {
+                    if (datasetMeta.data[index]) {
+                        const barElement = datasetMeta.data[index];
+                        const barTopY = barElement.y;
+                        const iconX = barElement.x;
+                        let iconY = barTopY - 8;
+
+                        if (barElement.height < 10) {
+                            iconY = y.getPixelForValue(0) - 18;
+                        }
+                        if (iconY < chart.chartArea.top + 10) {
+                            iconY = chart.chartArea.top + 10;
+                        }
+                        ctx.fillText('⚡', iconX, iconY);
+                    }
+                }
+            });
+            ctx.restore();
+        }
+    };
+
+    const currentTimeLinePlugin = {
+        id: 'currentTimeLinePlugin',
+        afterDatasetsDraw(chart, args, pluginOptions) {
+            const { ctx, chartArea, data, scales } = chart;
+            if (!chartArea || !data.labels || data.labels.length === 0) {
+                return;
+            }
+
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const currentTimeInMinutes = currentHour * 60 + currentMinute;
+
+            for (let i = 0; i < data.labels.length; i++) {
+                const label = data.labels[i];
+                const parts = label.split('-');
+                if (parts.length !== 2) continue;
+
+                const startTimeStr = parts[0];
+                const endTimeStr = parts[1];
+
+                const startH = parseInt(startTimeStr.substring(0, 2));
+                const startM = parseInt(startTimeStr.substring(3, 5));
+                const slotStartTimeInMinutes = startH * 60 + startM;
+
+                const endH = parseInt(endTimeStr.substring(0, 2));
+                const endM = parseInt(endTimeStr.substring(3, 5));
+                let slotEndTimeInMinutes = endH * 60 + endM;
+
+                if (slotEndTimeInMinutes === 0 && endH === 0 && endM === 0) {
+                    slotEndTimeInMinutes = 24 * 60;
+                }
+
+
+                const slotDurationMinutes = slotEndTimeInMinutes - slotStartTimeInMinutes;
+                if (slotDurationMinutes <= 0) continue;
+
+
+                if (currentTimeInMinutes >= slotStartTimeInMinutes && currentTimeInMinutes < slotEndTimeInMinutes) {
+                    const barMeta = chart.getDatasetMeta(0).data[i];
+                    if (!barMeta) continue;
+
+                    const timeIntoSlot = currentTimeInMinutes - slotStartTimeInMinutes;
+                    const offsetRatio = timeIntoSlot / slotDurationMinutes;
+
+                    const lineX = barMeta.x - (barMeta.width / 2) + (offsetRatio * barMeta.width);
+
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(lineX, chartArea.top);
+                    ctx.lineTo(lineX, chartArea.bottom);
+                    ctx.strokeStyle = 'red';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.restore();
+                    break;
+                }
+            }
+        }
+    };
+
+
     async function fetchData() {
         try {
             const response = await fetch('/dashboard/data');
@@ -116,21 +216,19 @@
             if (existingError) existingError.remove();
             document.getElementById('emissionChart').style.display = 'block';
 
-
             if (data.bar_data && data.bar_data.length > 0) {
-                // Assuming API provides enough data points.
-                // If not, you might need to adjust slicing or inform the user.
-                const first24HoursData = data.bar_data.slice(0, Math.min(data.bar_data.length, 24 * (60/5) )); // Assuming 5 min granularity for 24 hours
-                // The original slice(6,30) was 24 points.
-                // Let's aim for 24 points if available.
-                updateChart(first24HoursData.slice(0,24)); // Take the first 24 points for the chart
+                const fullDayData = data.bar_data.slice(0, Math.min(data.bar_data.length, 24 * 12));
+                const dataForChartDisplay = fullDayData.slice(6, 30);
+                updateChart(dataForChartDisplay, data.best_charging_slots || []);
             } else {
                 console.warn("No bar data received or data is empty.");
+                updateChart([], data.best_charging_slots || []);
             }
+
             console.log("Latest Emission Factor:", data.latest_ef);
             if (data.car_charging_hours !== undefined) {
-                document.getElementById('carHours').value = data.car_charging_hours;
-                console.log("Current Car Charging Hours (from backend):", data.car_charging_hours);
+                lastFetchedCarHours = parseFloat(data.car_charging_hours);
+                document.getElementById('carHours').value = lastFetchedCarHours;
             }
 
             if (data.hard_charge_end_time) {
@@ -139,7 +237,6 @@
             } else {
                 document.getElementById('hardChargeEndTimeDisplay').textContent = "Not set";
             }
-
 
         } catch (error) {
             console.error("Fetch error:", error);
@@ -153,15 +250,15 @@
                 chartContainer.appendChild(errorP);
             }
             errorP.textContent = 'Error fetching dashboard data. Please check your connection.';
+            updateChart([], []);
         }
     }
 
-    let emissionChartInstance = null;
-
-    function updateChart(barData) {
+    function updateChart(barDataToDisplay, allBestChargingSlots) {
         const ctx = document.getElementById('emissionChart').getContext('2d');
-        const labels = barData.map(item => item.label);
-        const heights = barData.map(item => item.height);
+        const labels = barDataToDisplay.map(item => item.label);
+        const heights = barDataToDisplay.map(item => item.height);
+        const bestSlotLabelsForHighlight = allBestChargingSlots.map(slot => slot.label);
 
         if (emissionChartInstance) {
             emissionChartInstance.destroy();
@@ -198,6 +295,11 @@
                         title: {
                             display: true,
                             text: 'Time Slot'
+                        },
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 70,
+                            minRotation: 70,
                         }
                     }
                 },
@@ -218,16 +320,23 @@
                                 return label;
                             }
                         }
+                    },
+                    lightningBoltPlugin: {
+                        bestLabels: bestSlotLabelsForHighlight
                     }
                 }
-            }
+            },
+            plugins: [lightningBoltPlugin, currentTimeLinePlugin]
         });
     }
 
     async function setCarChargingHours() {
-        const hours = document.getElementById('carHours').value;
+        const hoursInput = document.getElementById('carHours');
+        const hours = hoursInput.value;
+
         if (hours === "" || parseFloat(hours) < 0) {
             alert("Please enter a valid non-negative number for car charging hours.");
+            hoursInput.value = lastFetchedCarHours;
             return;
         }
         try {
@@ -241,12 +350,16 @@
             const result = await response.json();
             if (response.ok) {
                 console.log("Car charging hours updated:", result.current_hours);
+                lastFetchedCarHours = parseFloat(result.current_hours);
+                fetchData();
             } else {
                 alert("Error: " + result.error);
+                hoursInput.value = lastFetchedCarHours;
             }
         } catch (error) {
             console.error("Error setting car charging hours:", error);
             alert("Failed to set car charging hours. Please try again.");
+            hoursInput.value = lastFetchedCarHours;
         }
     }
 
