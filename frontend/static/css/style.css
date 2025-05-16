@@ -22,25 +22,54 @@ body {
     padding: 15px 20px;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: space-between;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .menu-button {
     font-size: 1.8em;
-    margin-right: 15px;
     color: white;
     background: none;
     border: none;
     padding: 0;
     cursor: pointer;
+    transition: opacity 0.2s ease-in-out;
+    flex-shrink: 0;
+    width: 40px;
+    text-align: center;
+}
+
+.menu-button:hover {
+    opacity: 0.8;
+}
+
+.header-center-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+.header-logo-icon {
+    stroke: white;
+    fill: none;
+    width: 28px;
+    height: 28px;
+    margin-right: 10px;
 }
 
 .app-header h1 {
     margin: 0;
     font-size: 1.7em;
     font-weight: 500;
+    white-space: nowrap;
 }
+
+.header-right-placeholder {
+    width: 40px;
+    flex-shrink: 0;
+}
+
 
 .app-content {
     padding: 20px;
@@ -81,7 +110,7 @@ body {
 .chart-container {
     position: relative;
     margin-bottom: 15px;
-    height: 180px; /* Adjusted height */
+    height: 180px;
     border-radius: 8px;
     overflow: hidden;
 }
@@ -134,7 +163,43 @@ body {
     border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-/* Larger screens */
+.input-group {
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 6px;
+}
+
+.input-group label {
+    font-size: 0.9em;
+    color: #333;
+}
+
+.input-group input[type="number"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 70px;
+    text-align: right;
+}
+
+.input-group button {
+    padding: 8px 12px;
+    background-color: #00acc1;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.input-group button:hover {
+    background-color: #008a9a;
+}
+
 @media (min-width: 600px) {
     .app-container {
         margin: 30px auto;
@@ -142,6 +207,21 @@ body {
 
     .app-header h1 {
         font-size: 2em;
+    }
+
+    .header-logo-icon {
+        width: 32px;
+        height: 32px;
+        margin-right: 12px;
+    }
+
+    .menu-button {
+        font-size: 2em;
+        width: 45px;
+    }
+
+    .header-right-placeholder {
+        width: 45px;
     }
 
     .section-header h2 {
@@ -170,46 +250,6 @@ body {
     }
 }
 
-/* Add this to your existing style.css */
-
-.input-group {
-    margin-top: 15px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px;
-    background-color: #f0f0f0; /* Light background for the input area */
-    border-radius: 6px;
-}
-
-.input-group label {
-    font-size: 0.9em;
-    color: #333;
-}
-
-.input-group input[type="number"] {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 70px; /* Adjust as needed */
-    text-align: right;
-}
-
-.input-group button {
-    padding: 8px 12px;
-    background-color: #00acc1; /* Theme color */
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9em;
-}
-
-.input-group button:hover {
-    background-color: #008a9a; /* Darker shade on hover */
-}
-
-/* Responsive adjustments for input groups if needed */
 @media (max-width: 400px) {
     .input-group {
         flex-direction: column;
@@ -218,10 +258,20 @@ body {
 
     .input-group input[type="number"] {
         width: 100%;
+        box-sizing: border-box;
         margin-bottom: 5px;
     }
 
     .input-group button {
         width: 100%;
+    }
+
+    .app-header h1 {
+        font-size: 1.4em;
+    }
+    .header-logo-icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 8px;
     }
 }
