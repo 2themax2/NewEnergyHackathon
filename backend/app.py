@@ -9,7 +9,8 @@ load_dotenv()
 app = Flask(__name__, template_folder='../frontend/templates', static_folder='../frontend/static')
 
 app_data = {
-    'car_charging_hours': 5
+    'car_charging_hours': 5,
+    'hard_charge_end_time': '07:00'
 }
 
 # example: best_slots = best_time_slots(bar_data, app_data['car_charging_hours'])
