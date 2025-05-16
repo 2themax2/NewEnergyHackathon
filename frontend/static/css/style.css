@@ -110,7 +110,7 @@ body {
 .chart-container {
     position: relative;
     margin-bottom: 15px;
-    height: 180px;
+    height: 200px;
     border-radius: 8px;
     overflow: hidden;
 }
@@ -178,6 +178,13 @@ body {
     color: #333;
 }
 
+.input-group input[type="time"] {
+    padding: 7px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+
 .input-group input[type="number"] {
     padding: 8px;
     border: 1px solid #ccc;
@@ -203,6 +210,7 @@ body {
 @media (min-width: 600px) {
     .app-container {
         margin: 30px auto;
+        max-width: 800px;
     }
 
     .app-header h1 {
@@ -229,7 +237,7 @@ body {
     }
 
     .chart-container {
-        height: 220px;
+        height: 250px;
     }
 
     .info-grid {
@@ -253,10 +261,14 @@ body {
 @media (max-width: 400px) {
     .input-group {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+    }
+    .input-group label {
+        margin-bottom: 5px;
     }
 
-    .input-group input[type="number"] {
+    .input-group input[type="number"],
+    .input-group input[type="time"] {
         width: 100%;
         box-sizing: border-box;
         margin-bottom: 5px;
@@ -273,5 +285,8 @@ body {
         width: 24px;
         height: 24px;
         margin-right: 8px;
+    }
+    .chart-container {
+        height: 180px;
     }
 }

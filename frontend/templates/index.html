@@ -269,7 +269,7 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Emission Factor (gCO2eq/kWh)',
+                    label: 'Emission Factor (gCO2/kWh)',
                     data: heights,
                     backgroundColor: 'rgba(54, 162, 235, 0.8)',
                     borderColor: 'rgba(54, 162, 235, 1)',
@@ -298,8 +298,18 @@
                         },
                         ticks: {
                             autoSkip: true,
-                            maxRotation: 70,
-                            minRotation: 70,
+                            maxRotation: 45,
+                            minRotation: 45,
+                            font: {
+                                size: 10
+                            },
+                            callback: function(value, index, ticks) {
+                                const label = this.getLabelForValue(value);
+                                if (typeof label === 'string' && label.includes('-')) {
+                                    return label.split('-')[0];
+                                }
+                                return label;
+                            }
                         }
                     }
                 },
