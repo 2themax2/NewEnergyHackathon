@@ -1,0 +1,40 @@
+
+<header class="app-header">
+  <nav class="nav-container">
+    <div class="logo">
+      <a routerLink="/dashboard" (click)="closeMenu()">
+        <i class="fas fa-bolt logo-icon"></i> <span>{{ appName }}</span>
+      </a>
+    </div>
+
+    <ul class="nav-links desktop-nav">
+      <li *ngFor="let item of navItems">
+        <a
+          [routerLink]="item.link"
+          routerLinkActive="active-link"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeMenu()">
+          <i [class]="item.icon"></i> {{ item.label }}
+        </a>
+      </li>
+    </ul>
+
+    <button class="burger-menu" (click)="toggleMenu()" aria-label="Toggle menu">
+      <i [class]="isMenuOpen ? 'fas fa-times' : 'fas fa-bars'"></i>
+    </button>
+
+    <div class="mobile-nav-overlay" [class.open]="isMenuOpen" (click)="closeMenu()">
+      <ul class="mobile-nav-links" (click)="$event.stopPropagation()">
+        <li *ngFor="let item of navItems">
+          <a
+            [routerLink]="item.link"
+            routerLinkActive="active-link"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="closeMenu()">
+            <i [class]="item.icon"></i> {{ item.label }}
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</header>

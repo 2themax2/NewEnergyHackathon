@@ -1,0 +1,175 @@
+
+/* src/app/components/header/header.component.css */
+.app-header {
+  background-color: var(--surface-color); /* Slightly different from main background */
+  padding: 0 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  position: fixed; /* Fixed header */
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000; /* Ensure it's above other content */
+  height: 70px; /* Fixed height */
+  display: flex;
+  align-items: center;
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1300px; /* Max width for content within header */
+  margin: 0 auto;
+}
+
+.logo a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--primary-color); /* Use primary color for logo */
+  font-size: 1.8em;
+  font-weight: 700;
+  transition: color var(--transition-speed) ease;
+}
+
+.logo a:hover {
+  color: var(--accent-color);
+}
+
+.logo-icon {
+  margin-right: 10px;
+  animation: pulseIcon 2s infinite ease-in-out;
+}
+
+@keyframes pulseIcon {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links li {
+  margin-left: 25px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--text-secondary-color);
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  transition: color var(--transition-speed) ease, background-color var(--transition-speed) ease;
+  display: flex;
+  align-items: center;
+}
+
+.nav-links a i {
+  margin-right: 8px;
+}
+
+.nav-links a:hover,
+.nav-links a.active-link {
+  color: var(--text-primary-color);
+  background-color: rgba(var(--primary-color-rgb, 0, 123, 255), 0.1); /* Subtle background on hover/active */
+  color: var(--primary-color);
+}
+
+.burger-menu {
+  display: none; /* Hidden on desktop */
+  background: none;
+  border: none;
+  color: var(--text-primary-color);
+  font-size: 1.8em;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.mobile-nav-overlay {
+  display: none; /* Hidden by default */
+  position: fixed;
+  top: 70px; /* Below header */
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 70px);
+  background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent overlay */
+  backdrop-filter: blur(5px);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-speed) ease, visibility var(--transition-speed) ease;
+}
+
+.mobile-nav-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mobile-nav-links {
+  list-style: none;
+  padding: 30px;
+  margin: 0;
+  background-color: var(--surface-color);
+  height: 100%;
+  width: 75%; /* Or a fixed width like 280px */
+  max-width: 300px;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+  transform: translateX(-100%);
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1); /* Smooth slide-in */
+}
+
+.mobile-nav-overlay.open .mobile-nav-links {
+  transform: translateX(0);
+}
+
+
+.mobile-nav-links li {
+  margin-bottom: 20px;
+}
+
+.mobile-nav-links a {
+  text-decoration: none;
+  color: var(--text-primary-color);
+  font-size: 1.2em;
+  padding: 10px 15px;
+  display: block;
+  border-radius: var(--border-radius);
+  transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+}
+
+.mobile-nav-links a:hover,
+.mobile-nav-links a.active-link {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.mobile-nav-actions {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--text-secondary-color);
+}
+
+/* Responsive: Show burger menu on smaller screens */
+@media (max-width: 768px) {
+  .desktop-nav {
+    display: none;
+  }
+  .burger-menu {
+    display: block;
+  }
+  .mobile-nav-overlay {
+    display: block; /* Make it part of the layout flow for transitions */
+  }
+}
+
+/* Helper to define --primary-color-rgb for rgba usage if not already defined */
+:root {
+  /* Assuming --primary-color is #007bff */
+  --primary-color-rgb: 0, 123, 255;
+}
