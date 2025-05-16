@@ -43,11 +43,11 @@ def post_power_state(power_state : bool):
     try:
         # Make a GET request
         response = requests.post(endpoint_url, json= {"on" : power_state})
-      
+
 
         # Or make a POST request with some data
         # response = requests.post(endpoint_url, json={"key": "value"})
-        
+
 
     except requests.RequestException as e:
         print("fail")
@@ -56,6 +56,7 @@ def post_power_state(power_state : bool):
 @app.route("/dashboard")
 @app.route('/')
 def home():
+    get_socket_state()
     return render_template('index.html')
 
 @app.route("/dashboard/data")

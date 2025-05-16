@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Energy Dashboard</title>
+    <title>Just Charge It</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -15,7 +15,7 @@
             <svg aria-hidden="true" class="header-logo-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
             </svg>
-            <h1>Smart Energy</h1>
+            <h1>Just Charge It</h1>
         </div>
         <div class="header-right-placeholder"></div>
     </header>
@@ -26,7 +26,7 @@
                 <h2>Car Charging</h2>
             </div>
             <div class="load-status-card">
-                <h3>Charge hard end time: <span id="hardChargeEndTimeDisplay">-</span></h3>
+                <h3>Fully charged at: <span id="hardChargeEndTimeDisplay">-</span></h3>
                 <div class="input-group">
                     <label for="hardChargeTime">Set End Time:</label>
                     <input type="time" id="hardChargeTime" name="hardChargeTime">
@@ -449,7 +449,7 @@
     }
 
     fetchData();
-    setInterval(fetchData, 60000);
+    setInterval(fetchData, 600000);
 </script>
 </body>
 </html>
