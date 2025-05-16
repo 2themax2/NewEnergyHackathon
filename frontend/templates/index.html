@@ -114,7 +114,7 @@
                 const first24HoursData = data.bar_data.slice(0, Math.min(data.bar_data.length, 24 * (60/5) )); // Assuming 5 min granularity for 24 hours
                 // The original slice(6,30) was 24 points.
                 // Let's aim for 24 points if available.
-                updateChart(first24HoursData.slice(0,24)); // Take the first 24 points for the chart
+                updateChart(first24HoursData.slice(6,30)); // Take the first 24 points for the chart
             } else {
                 console.warn("No bar data received or data is empty.");
                 // Optionally, display a message in the chart area that data is unavailable
