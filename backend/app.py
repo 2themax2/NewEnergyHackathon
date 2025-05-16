@@ -10,7 +10,7 @@ app = Flask(__name__, template_folder='../frontend/templates', static_folder='..
 
 app_data = {
     'car_charging_hours': 5,
-    'hard_charge_end_time': '07:00'
+    'hard_charge_end_time': '04:00'
 }
 
 def best_time_slots(data, num_slots_to_pick):

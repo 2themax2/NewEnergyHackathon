@@ -54,11 +54,31 @@
             </div>
         </section>
 
+        <section class="dashboard-section bike-battery-section">
+            <div class="section-header">
+                <h2>Bike Battery</h2>
+            </div>
+            <div class="load-status-card">
+                <div class="chart-container">
+                    <canvas id="bikeBatteryEmissionChart"></canvas>
+                </div>
+                <p>Information about your bike battery will be displayed here.</p>
+                <div class="input-group">
+                    <label for="bikeBatteryHours">Charging Hours:</label>
+                    <input type="number" id="bikeBatteryHours" name="bikeBatteryHours" value="1" min="0">
+                    <button onclick="alert('Bike Battery hours setting is for display only.')">Set Bike Battery Hours</button>
+                </div>
+            </div>
+        </section>
+
         <section class="dashboard-section home-battery-section">
             <div class="section-header">
                 <h2>Home Battery</h2>
             </div>
-            <div class="placeholder-card">
+            <div class="load-status-card">
+                <div class="chart-container">
+                    <canvas id="homeBatteryEmissionChart"></canvas>
+                </div>
                 <p>Information about your home battery will be displayed here.</p>
                 <div class="input-group">
                     <label for="homeBatteryHours">Charging Hours:</label>
@@ -68,19 +88,6 @@
             </div>
         </section>
 
-        <section class="dashboard-section bike-battery-section">
-            <div class="section-header">
-                <h2>Bike Battery</h2>
-            </div>
-            <div class="placeholder-card">
-                <p>Information about your bike battery will be displayed here.</p>
-                <div class="input-group">
-                    <label for="bikeBatteryHours">Charging Hours:</label>
-                    <input type="number" id="bikeBatteryHours" name="bikeBatteryHours" value="1" min="0">
-                    <button onclick="alert('Bike Battery hours setting is for display only.')">Set Bike Battery Hours</button>
-                </div>
-            </div>
-        </section>
     </main>
 
     <footer class="app-footer">
@@ -90,6 +97,8 @@
 
 <script>
     let emissionChartInstance = null;
+    let homeBatteryChartInstance = null;
+    let bikeBatteryChartInstance = null;
     let lastFetchedCarHours = 1;
 
     const lightningBoltPlugin = {
@@ -162,10 +171,8 @@
                     slotEndTimeInMinutes = 24 * 60;
                 }
 
-
                 const slotDurationMinutes = slotEndTimeInMinutes - slotStartTimeInMinutes;
                 if (slotDurationMinutes <= 0) continue;
-
 
                 if (currentTimeInMinutes >= slotStartTimeInMinutes && currentTimeInMinutes < slotEndTimeInMinutes) {
                     const barMeta = chart.getDatasetMeta(0).data[i];
@@ -199,30 +206,37 @@
             if (data.error) {
                 console.error("Error fetching data:", data.error);
                 document.getElementById('emissionChart').style.display = 'none';
-                const chartContainer = document.querySelector('.car-section .chart-container');
-                let errorP = chartContainer.querySelector('.api-error-message');
-                if (!errorP) {
-                    errorP = document.createElement('p');
-                    errorP.className = 'api-error-message';
-                    errorP.style.color = 'red';
-                    errorP.style.textAlign = 'center';
-                    chartContainer.appendChild(errorP);
-                }
-                errorP.textContent = 'Failed to load emission data. Please try again later.';
+                document.getElementById('homeBatteryEmissionChart').style.display = 'none';
+                document.getElementById('bikeBatteryEmissionChart').style.display = 'none';
+
+                const chartContainers = document.querySelectorAll('.chart-container');
+                chartContainers.forEach(container => {
+                    let errorP = container.querySelector('.api-error-message');
+                    if (!errorP) {
+                        errorP = document.createElement('p');
+                        errorP.className = 'api-error-message';
+                        errorP.style.color = 'red';
+                        errorP.style.textAlign = 'center';
+                        container.appendChild(errorP);
+                    }
+                    errorP.textContent = 'Failed to load emission data. Please try again later.';
+                });
                 return;
             }
 
-            const existingError = document.querySelector('.car-section .chart-container .api-error-message');
-            if (existingError) existingError.remove();
+            document.querySelectorAll('.api-error-message').forEach(el => el.remove());
             document.getElementById('emissionChart').style.display = 'block';
+            document.getElementById('homeBatteryEmissionChart').style.display = 'block';
+            document.getElementById('bikeBatteryEmissionChart').style.display = 'block';
+
 
             if (data.bar_data && data.bar_data.length > 0) {
                 const fullDayData = data.bar_data.slice(0, Math.min(data.bar_data.length, 24 * 12));
                 const dataForChartDisplay = fullDayData.slice(6, 30);
-                updateChart(dataForChartDisplay, data.best_charging_slots || []);
+                updateAllCharts(dataForChartDisplay, data.best_charging_slots || []);
             } else {
                 console.warn("No bar data received or data is empty.");
-                updateChart([], data.best_charging_slots || []);
+                updateAllCharts([], data.best_charging_slots || []);
             }
 
             console.log("Latest Emission Factor:", data.latest_ef);
@@ -240,31 +254,34 @@
 
         } catch (error) {
             console.error("Fetch error:", error);
-            const chartContainer = document.querySelector('.car-section .chart-container');
-            let errorP = chartContainer.querySelector('.api-error-message');
-            if (!errorP) {
-                errorP = document.createElement('p');
-                errorP.className = 'api-error-message';
-                errorP.style.color = 'red';
-                errorP.style.textAlign = 'center';
-                chartContainer.appendChild(errorP);
-            }
-            errorP.textContent = 'Error fetching dashboard data. Please check your connection.';
-            updateChart([], []);
+            const chartContainers = document.querySelectorAll('.chart-container');
+            chartContainers.forEach(container => {
+                let errorP = container.querySelector('.api-error-message');
+                if (!errorP) {
+                    errorP = document.createElement('p');
+                    errorP.className = 'api-error-message';
+                    errorP.style.color = 'red';
+                    errorP.style.textAlign = 'center';
+                    container.appendChild(errorP);
+                }
+                errorP.textContent = 'Error fetching dashboard data. Please check your connection.';
+            });
+            updateAllCharts([], []);
         }
     }
 
-    function updateChart(barDataToDisplay, allBestChargingSlots) {
-        const ctx = document.getElementById('emissionChart').getContext('2d');
+    function updateAllCharts(barDataToDisplay, allBestChargingSlots) {
+        updateMainChart(barDataToDisplay, allBestChargingSlots);
+        updateSecondaryChart('homeBatteryEmissionChart', barDataToDisplay, homeBatteryChartInstance, (newInstance) => homeBatteryChartInstance = newInstance);
+        updateSecondaryChart('bikeBatteryEmissionChart', barDataToDisplay, bikeBatteryChartInstance, (newInstance) => bikeBatteryChartInstance = newInstance);
+    }
+
+
+    function createChartConfig(barDataToDisplay, plugins, bestSlotLabelsForHighlight = []) {
         const labels = barDataToDisplay.map(item => item.label);
         const heights = barDataToDisplay.map(item => item.height);
-        const bestSlotLabelsForHighlight = allBestChargingSlots.map(slot => slot.label);
 
-        if (emissionChartInstance) {
-            emissionChartInstance.destroy();
-        }
-
-        emissionChartInstance = new Chart(ctx, {
+        const config = {
             type: 'bar',
             data: {
                 labels: labels,
@@ -330,15 +347,45 @@
                                 return label;
                             }
                         }
-                    },
-                    lightningBoltPlugin: {
-                        bestLabels: bestSlotLabelsForHighlight
                     }
                 }
             },
-            plugins: [lightningBoltPlugin, currentTimeLinePlugin]
-        });
+            plugins: plugins
+        };
+
+        if (bestSlotLabelsForHighlight.length > 0 && config.options.plugins.lightningBoltPlugin !== false) {
+            config.options.plugins.lightningBoltPlugin = { bestLabels: bestSlotLabelsForHighlight };
+        } else {
+            delete config.options.plugins.lightningBoltPlugin;
+        }
+        return config;
     }
+
+    function updateMainChart(barDataToDisplay, allBestChargingSlots) {
+        const ctx = document.getElementById('emissionChart').getContext('2d');
+        const bestSlotLabelsForHighlight = allBestChargingSlots.map(slot => slot.label);
+
+        if (emissionChartInstance) {
+            emissionChartInstance.destroy();
+        }
+        const chartPlugins = [lightningBoltPlugin, currentTimeLinePlugin];
+        const config = createChartConfig(barDataToDisplay, chartPlugins, bestSlotLabelsForHighlight);
+        emissionChartInstance = new Chart(ctx, config);
+    }
+
+    function updateSecondaryChart(canvasId, barDataToDisplay, chartInstance, setInstanceCallback) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
+        const chartPlugins = [currentTimeLinePlugin];
+        const config = createChartConfig(barDataToDisplay, chartPlugins);
+        config.options.plugins.lightningBoltPlugin = false; // Explicitly disable for secondary charts
+
+        const newInstance = new Chart(ctx, config);
+        setInstanceCallback(newInstance);
+    }
+
 
     async function setCarChargingHours() {
         const hoursInput = document.getElementById('carHours');
@@ -391,6 +438,7 @@
             if (response.ok) {
                 console.log("Hard charge end time updated:", result.current_time);
                 document.getElementById('hardChargeEndTimeDisplay').textContent = result.current_time;
+                fetchData();
             } else {
                 alert("Error: " + result.error);
             }
@@ -401,6 +449,7 @@
     }
 
     fetchData();
+    setInterval(fetchData, 60000);
 </script>
 </body>
 </html>
