@@ -11,7 +11,13 @@
 <div class="app-container">
     <header class="app-header">
         <button class="menu-button">&#9776;</button>
-        <h1>Smart Energy</h1>
+        <div class="header-center-content">
+            <svg aria-hidden="true" class="header-logo-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+            </svg>
+            <h1>Smart Energy</h1>
+        </div>
+        <div class="header-right-placeholder"></div>
     </header>
 
     <main class="app-content">
@@ -20,22 +26,27 @@
                 <h2>Car Charging</h2>
             </div>
             <div class="load-status-card">
-                <h3>Charging Status</h3>
+                <h3>Charge hard end time: <span id="hardChargeEndTimeDisplay">-</span></h3>
+                <div class="input-group">
+                    <label for="hardChargeTime">Set End Time:</label>
+                    <input type="time" id="hardChargeTime" name="hardChargeTime">
+                    <button onclick="setHardChargeEndTime()">Set End Time</button>
+                </div>
                 <div class="chart-container">
                     <canvas id="emissionChart"></canvas>
                 </div>
                 <div class="info-grid">
                     <div class="info-box">
                         <p class="label">Status</p>
-                        <p class="value">Charging...</p>
+                        <p class="value">Waiting...</p>
                     </div>
                     <div class="info-box">
-                        <p class="label">Speed</p>
-                        <p class="value">Fast</p>
+                        <p class="label">CO2 saved today</p>
+                        <p class="value">0.2 kg</p>
                     </div>
                     <div class="info-box">
-                        <p class="label">Total Charged</p>
-                        <p class="value">47.8 kg</p> </div>
+                        <p class="label">Total CO2 saved</p>
+                        <p class="value">26.8 kg</p> </div>
                 </div>
                 <div class="input-group">
                     <label for="carHours">Charging Hours:</label>
@@ -87,8 +98,7 @@
 
             if (data.error) {
                 console.error("Error fetching data:", data.error);
-                // Display error to user on the page
-                document.getElementById('emissionChart').style.display = 'none'; // Hide chart
+                document.getElementById('emissionChart').style.display = 'none';
                 const chartContainer = document.querySelector('.car-section .chart-container');
                 let errorP = chartContainer.querySelector('.api-error-message');
                 if (!errorP) {
@@ -102,7 +112,6 @@
                 return;
             }
 
-            // Clear any previous error messages
             const existingError = document.querySelector('.car-section .chart-container .api-error-message');
             if (existingError) existingError.remove();
             document.getElementById('emissionChart').style.display = 'block';
@@ -114,15 +123,21 @@
                 const first24HoursData = data.bar_data.slice(0, Math.min(data.bar_data.length, 24 * (60/5) )); // Assuming 5 min granularity for 24 hours
                 // The original slice(6,30) was 24 points.
                 // Let's aim for 24 points if available.
-                updateChart(first24HoursData.slice(6,30)); // Take the first 24 points for the chart
+                updateChart(first24HoursData.slice(0,24)); // Take the first 24 points for the chart
             } else {
                 console.warn("No bar data received or data is empty.");
-                // Optionally, display a message in the chart area that data is unavailable
             }
             console.log("Latest Emission Factor:", data.latest_ef);
             if (data.car_charging_hours !== undefined) {
                 document.getElementById('carHours').value = data.car_charging_hours;
                 console.log("Current Car Charging Hours (from backend):", data.car_charging_hours);
+            }
+
+            if (data.hard_charge_end_time) {
+                document.getElementById('hardChargeTime').value = data.hard_charge_end_time;
+                document.getElementById('hardChargeEndTimeDisplay').textContent = data.hard_charge_end_time;
+            } else {
+                document.getElementById('hardChargeEndTimeDisplay').textContent = "Not set";
             }
 
 
@@ -141,7 +156,7 @@
         }
     }
 
-    let emissionChartInstance = null; // To keep track of the chart instance
+    let emissionChartInstance = null;
 
     function updateChart(barData) {
         const ctx = document.getElementById('emissionChart').getContext('2d');
@@ -149,7 +164,7 @@
         const heights = barData.map(item => item.height);
 
         if (emissionChartInstance) {
-            emissionChartInstance.destroy(); // Destroy the old chart instance before creating a new one
+            emissionChartInstance.destroy();
         }
 
         emissionChartInstance = new Chart(ctx, {
@@ -157,7 +172,7 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Emission Factor (gCO2eq/kWh)', // More descriptive label
+                    label: 'Emission Factor (gCO2eq/kWh)',
                     data: heights,
                     backgroundColor: 'rgba(54, 162, 235, 0.8)',
                     borderColor: 'rgba(54, 162, 235, 1)',
@@ -170,7 +185,7 @@
                 scales: {
                     y: {
                         beginAtZero: true,
-                        display: true, // It's usually good to display the y-axis
+                        display: true,
                         title: {
                             display: true,
                             text: 'Emission Factor'
@@ -188,7 +203,7 @@
                 },
                 plugins: {
                     legend: {
-                        display: false // Or true if you prefer
+                        display: false
                     },
                     tooltip: {
                         callbacks: {
@@ -226,8 +241,6 @@
             const result = await response.json();
             if (response.ok) {
                 console.log("Car charging hours updated:", result.current_hours);
-                // Optionally, you can re-fetch all data or update UI elements if needed
-                // fetchData(); // If you want to refresh the whole dashboard data
             } else {
                 alert("Error: " + result.error);
             }
@@ -237,8 +250,34 @@
         }
     }
 
+    async function setHardChargeEndTime() {
+        const timeValue = document.getElementById('hardChargeTime').value;
+        if (!timeValue) {
+            alert("Please select a valid end time.");
+            return;
+        }
+        try {
+            const response = await fetch('/set_hard_charge_end_time', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ time: timeValue }),
+            });
+            const result = await response.json();
+            if (response.ok) {
+                console.log("Hard charge end time updated:", result.current_time);
+                document.getElementById('hardChargeEndTimeDisplay').textContent = result.current_time;
+            } else {
+                alert("Error: " + result.error);
+            }
+        } catch (error) {
+            console.error("Error setting hard charge end time:", error);
+            alert("Failed to set hard charge end time. Please try again.");
+        }
+    }
+
     fetchData();
-    // setInterval(fetchData, 300000); // Fetch every 5 minutes
 </script>
 </body>
 </html>
