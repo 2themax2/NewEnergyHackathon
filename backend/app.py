@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 from datetime import datetime
 import requests
 from dotenv import load_dotenv
@@ -6,7 +6,12 @@ import os
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../frontend/templates')
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
 
 @app.route("/dashboard")
 def get_utilization_data():
@@ -35,11 +40,11 @@ def get_utilization_data():
         for item in data.get('hydra:member', []):
             # Format emission factor to 3 decimal places
             ef = round(item.get('emissionfactor', 0), 3)
-            
+
             # Parse and format timestamps
             valid_from = datetime.fromisoformat(item['validfrom'])
             valid_to = datetime.fromisoformat(item['validto'])
-            
+
             # Format time range with 24:00 for midnight
             from_time = valid_from.strftime("%H:%M")
             to_hour = valid_to.hour
