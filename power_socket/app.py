@@ -1,10 +1,12 @@
 from flask import Flask, render_template, jsonify, request
 import sqlite3
 import threading
+import os
 
 app = Flask(__name__, template_folder='templates')
 
-DB_PATH = 'database/database.db'
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+DB_PATH = os.path.join(BASE_DIR, 'database', 'database.db')
 DB_LOCK = threading.Lock()
 
 
