@@ -1,9 +1,11 @@
 from flask import Flask, render_template, jsonify, request
+from datetime import datetime
 
 app = Flask(__name__, template_folder='templates')
 
 power_state = False
 connected_device = False
+time_connected = None
 
 def get_power_state_db():
     """Retrieve the power socket's power state from the database."""
@@ -24,8 +26,12 @@ def get_connected_device_db():
 
 def set_connected_device_db(connected: bool):
     """Sets whether a device is currently connected to the power socket."""
-    global connected_device
+    global connected_device, time_connected
     connected_device = connected
+    if connected:
+        time_connected = datetime.now().hour
+    else:
+        time_connected = None
 
 
 @app.route('/')
@@ -52,7 +58,12 @@ def api_set_power():
 @app.route('/api/device', methods=['GET'])
 def api_get_device_connected():
     """Retrieve whether a device is currently connected to the power socket."""
-    return jsonify({"device_connected": get_connected_device_db()})
+    return jsonify(
+        {
+            "device_connected": get_connected_device_db(),
+            "time_connected": time_connected
+        }
+    )
 
 
 @app.route('/api/device', methods=['POST'])
