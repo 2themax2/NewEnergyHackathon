@@ -21,10 +21,28 @@ def best_time_slots(data, num_slots_to_pick):
     chronological_best_slots = sorted(best_emission_slots, key=lambda x: x['label'])
     return chronological_best_slots
 
+def get_socket_state():
+    endpoint_url = "http://localhost:5001/api/device"
+    try:
+        # Make a GET request
+        response = requests.get(endpoint_url)
+        response.raise_for_status()  # Raise exception for HTTP errors
+        data = response.json()
+        print( data.get("device_connected"))
+
+        # Or make a POST request with some data
+        # response = requests.post(endpoint_url, json={"key": "value"})
+        
+
+    except requests.RequestException as e:
+        print("fail")
+        return
+
 
 @app.route("/dashboard")
 @app.route('/')
 def home():
+    get_socket_state()
     return render_template('index.html')
 
 @app.route("/dashboard/data")
