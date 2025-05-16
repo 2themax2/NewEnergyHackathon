@@ -9,20 +9,16 @@ load_dotenv()
 app = Flask(__name__, template_folder='../frontend/templates', static_folder='../frontend/static')
 
 app_data = {
-    'car_charging_hours': 1.0
+    'car_charging_hours': 5
 }
 
-
+# example: best_slots = best_time_slots(bar_data, app_data['car_charging_hours'])
+# return: [{'height': 0.029, 'label': '10:00-11:00'}, {'height': 0.024, 'label': '11:00-12:00'}, {'height': 0.024, 'label': '12:00-13:00'}, {'height': 0.028, 'label': '13:00-14:00'}, {'height': 0.028, 'label': '14:00-15:00'}]
 def best_time_slots(data, hours):
-    sorted_data = sorted(data, key=lambda x: x['emission_factor'])
-    subset = sorted_data[:hours]
-    sorted_data = sorted(subset, key=lambda x: x['time_range'])
+    sorted_data = sorted(data, key=lambda x: x['height'])
+    filter =  sorted_data[:int(hours)]
+    sorted_data = sorted(filter, key=lambda x: x['label'])
     return sorted_data
-
-def filter_time(data):
-
-
-    return filterd_data
 
 
 @app.route("/dashboard")
@@ -69,9 +65,6 @@ def get_utilization_data():
         latest_ef = round(data['hydra:member'][-1].get('emissionfactor', 0), 3) if data.get('hydra:member') else 0
 
         return jsonify({'bar_data': bar_data, 'latest_ef': latest_ef})
-        one = best_time_slots(formatted_data, 7)
-        new = formatted_data[6:30]
-        return jsonify(new)
 
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"API request failed: {str(e)}"}), 500
