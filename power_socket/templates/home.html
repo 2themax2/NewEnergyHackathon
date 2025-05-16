@@ -46,26 +46,91 @@
     </svg>
 
     <!-- Status text -->
-    <p id="status-text" style="margin:8px 0;font-size:1.2em;color:#333;">Power Off</p>
+    <p id="status-text-power" style="margin:8px 0;font-size:1.2em;color:#333;">Power Off</p>
+
+    <p id="status-text-device" style="margin:8px 0;font-size:1.2em;color:#333;">Device not connected</p>
 
     <!-- Control buttons -->
-    <button style="margin:4px;padding:8px 16px;font-size:1em;cursor:pointer;"
-      onclick="
-        document.getElementById('socket-bg').style.fill = 'url(#grad-on)';
-        document.getElementById('socket-bg').style.filter = 'drop-shadow(0 0 15px rgba(118,255,3,0.7))';
-        document.getElementById('status-text').innerText = 'Power On';
-      ">
+    <button id="turn-on-btn" style="margin:4px;padding:8px 16px;font-size:1em;cursor:pointer;">
       Turn On
     </button>
-    <button style="margin:4px;padding:8px 16px;font-size:1em;cursor:pointer;"
-      onclick="
-        document.getElementById('socket-bg').style.fill = '#ebebeb';
-        document.getElementById('socket-bg').style.filter = 'none';
-        document.getElementById('status-text').innerText = 'Power Off';
-      ">
+    <button id="turn-off-btn" style="margin:4px;padding:8px 16px;font-size:1em;cursor:pointer;">
       Turn Off
+    </button>
+    <button id="device-btn" style="margin:4px;padding:8px 16px;font-size:1em;cursor:pointer;">
+      Toggle connected device
     </button>
   </div>
 
 </body>
 </html>
+
+<script>
+  async function updateUI(on = false, device_connected = false) {
+    const bg = document.getElementById('socket-bg');
+    const status_power = document.getElementById('status-text-power');
+    const status_device = document.getElementById('status-text-device');
+    if (on) {
+      bg.style.fill = 'url(#grad-on)';
+      bg.style.filter = 'drop-shadow(0 0 15px rgba(118,255,3,0.7))';
+      status_power.innerText = 'Power On';
+    } else {
+      bg.style.fill = '#ebebeb';
+      bg.style.filter = 'none';
+      status_power.innerText = 'Power Off';
+    }
+
+    if (device_connected) {
+      status_device.innerText = 'Device connected';
+    } else {
+      status_device.innerText = 'Device not connected';
+    }
+  }
+
+  // On page load, fetch current state
+  window.addEventListener('DOMContentLoaded', async () => {
+    const res = await fetch('/api/power');
+    const { on } = await res.json();
+    await updateUI(on);
+  });
+
+  // Buttons
+  document.getElementById('turn-on-btn').addEventListener('click', async () => {
+    const res = await fetch('/api/power', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ on: true })
+    });
+    const { on } = await res.json();
+    await updateUI(on, undefined);
+  });
+  document.getElementById('turn-off-btn').addEventListener('click', async () => {
+    const res = await fetch('/api/power', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ on: false })
+    });
+    const { on } = await res.json();
+    await updateUI(on, undefined);
+  });
+  document.getElementById('device-btn').addEventListener('click', async () => {
+    const getRes = await fetch('/api/device', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const { device_connected } = await getRes.json();
+
+    const newState = !device_connected
+
+    const postRes = await fetch('/api/device', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ device_connected: newState })
+    })
+    const result = await postRes.json();
+
+    console.log('Server now thinks device_connected =', result.device_connected);
+    await updateUI(undefined, newState);
+  })
+</script>
+

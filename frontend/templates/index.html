@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Energy Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="app-container">
+    <header class="app-header">
+        <button class="menu-button">&#9776;</button>
+        <h1>Smart Energy</h1>
+    </header>
+
+    <main class="app-content">
+        <section class="dashboard-section car-section">
+            <div class="section-header">
+                <h2>Car Charging</h2>
+            </div>
+            <div class="load-status-card">
+                <h3>Charging Status</h3>
+                <div class="chart-container">
+                    <canvas id="emissionChart"></canvas>
+                </div>
+                <div class="info-grid">
+                    <div class="info-box">
+                        <p class="label">Status</p>
+                        <p class="value">Charging...</p>
+                    </div>
+                    <div class="info-box">
+                        <p class="label">Speed</p>
+                        <p class="value">Fast</p>
+                    </div>
+                    <div class="info-box">
+                        <p class="label">Total Charged</p>
+                        <p class="value">47.8 kg</p> </div>
+                </div>
+                <div class="input-group">
+                    <label for="carHours">Charging Hours:</label>
+                    <input type="number" id="carHours" name="carHours" value="1" min="0">
+                    <button onclick="setCarChargingHours()">Set Car Hours</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="dashboard-section home-battery-section">
+            <div class="section-header">
+                <h2>Home Battery</h2>
+            </div>
+            <div class="placeholder-card">
+                <p>Information about your home battery will be displayed here.</p>
+                <div class="input-group">
+                    <label for="homeBatteryHours">Charging Hours:</label>
+                    <input type="number" id="homeBatteryHours" name="homeBatteryHours" value="1" min="0">
+                    <button onclick="alert('Home Battery hours setting is for display only.')">Set Home Battery Hours</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="dashboard-section bike-battery-section">
+            <div class="section-header">
+                <h2>Bike Battery</h2>
+            </div>
+            <div class="placeholder-card">
+                <p>Information about your bike battery will be displayed here.</p>
+                <div class="input-group">
+                    <label for="bikeBatteryHours">Charging Hours:</label>
+                    <input type="number" id="bikeBatteryHours" name="bikeBatteryHours" value="1" min="0">
+                    <button onclick="alert('Bike Battery hours setting is for display only.')">Set Bike Battery Hours</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <p>&copy; 2025 Smart Energy Solutions</p>
+    </footer>
+</div>
+
+<script>
+    async function fetchData() {
+        try {
+            const response = await fetch('/dashboard/data');
+            const data = await response.json();
+
+            if (data.error) {
+                console.error("Error fetching data:", data.error);
+                // Display error to user on the page
+                document.getElementById('emissionChart').style.display = 'none'; // Hide chart
+                const chartContainer = document.querySelector('.car-section .chart-container');
+                let errorP = chartContainer.querySelector('.api-error-message');
+                if (!errorP) {
+                    errorP = document.createElement('p');
+                    errorP.className = 'api-error-message';
+                    errorP.style.color = 'red';
+                    errorP.style.textAlign = 'center';
+                    chartContainer.appendChild(errorP);
+                }
+                errorP.textContent = 'Failed to load emission data. Please try again later.';
+                return;
+            }
+
+            // Clear any previous error messages
+            const existingError = document.querySelector('.car-section .chart-container .api-error-message');
+            if (existingError) existingError.remove();
+            document.getElementById('emissionChart').style.display = 'block';
+
+
+            if (data.bar_data && data.bar_data.length > 0) {
+                // Assuming API provides enough data points.
+                // If not, you might need to adjust slicing or inform the user.
+                const first24HoursData = data.bar_data.slice(0, Math.min(data.bar_data.length, 24 * (60/5) )); // Assuming 5 min granularity for 24 hours
+                // The original slice(6,30) was 24 points.
+                // Let's aim for 24 points if available.
+                updateChart(first24HoursData.slice(0,24)); // Take the first 24 points for the chart
+            } else {
+                console.warn("No bar data received or data is empty.");
+                // Optionally, display a message in the chart area that data is unavailable
+            }
+            console.log("Latest Emission Factor:", data.latest_ef);
+            if (data.car_charging_hours !== undefined) {
+                document.getElementById('carHours').value = data.car_charging_hours;
+                console.log("Current Car Charging Hours (from backend):", data.car_charging_hours);
+            }
+
+
+        } catch (error) {
+            console.error("Fetch error:", error);
+            const chartContainer = document.querySelector('.car-section .chart-container');
+            let errorP = chartContainer.querySelector('.api-error-message');
+            if (!errorP) {
+                errorP = document.createElement('p');
+                errorP.className = 'api-error-message';
+                errorP.style.color = 'red';
+                errorP.style.textAlign = 'center';
+                chartContainer.appendChild(errorP);
+            }
+            errorP.textContent = 'Error fetching dashboard data. Please check your connection.';
+        }
+    }
+
+    let emissionChartInstance = null; // To keep track of the chart instance
+
+    function updateChart(barData) {
+        const ctx = document.getElementById('emissionChart').getContext('2d');
+        const labels = barData.map(item => item.label);
+        const heights = barData.map(item => item.height);
+
+        if (emissionChartInstance) {
+            emissionChartInstance.destroy(); // Destroy the old chart instance before creating a new one
+        }
+
+        emissionChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Emission Factor (gCO2eq/kWh)', // More descriptive label
+                    data: heights,
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        display: true, // It's usually good to display the y-axis
+                        title: {
+                            display: true,
+                            text: 'Emission Factor'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Time Slot'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false // Or true if you prefer
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y + ' gCO2eq/kWh';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    async function setCarChargingHours() {
+        const hours = document.getElementById('carHours').value;
+        if (hours === "" || parseFloat(hours) < 0) {
+            alert("Please enter a valid non-negative number for car charging hours.");
+            return;
+        }
+        try {
+            const response = await fetch('/set_car_hours', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ hours: parseFloat(hours) }),
+            });
+            const result = await response.json();
+            if (response.ok) {
+                console.log("Car charging hours updated:", result.current_hours);
+                // Optionally, you can re-fetch all data or update UI elements if needed
+                // fetchData(); // If you want to refresh the whole dashboard data
+            } else {
+                alert("Error: " + result.error);
+            }
+        } catch (error) {
+            console.error("Error setting car charging hours:", error);
+            alert("Failed to set car charging hours. Please try again.");
+        }
+    }
+
+    fetchData();
+    // setInterval(fetchData, 300000); // Fetch every 5 minutes
+</script>
+</body>
+</html>
