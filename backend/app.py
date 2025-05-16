@@ -38,11 +38,24 @@ def get_socket_state():
         print("fail")
         return
 
+def post_power_state(power_state : bool):
+    endpoint_url = "http://localhost:5001/api/power"
+    try:
+        # Make a GET request
+        response = requests.post(endpoint_url, json= {"on" : power_state})
+      
+
+        # Or make a POST request with some data
+        # response = requests.post(endpoint_url, json={"key": "value"})
+        
+
+    except requests.RequestException as e:
+        print("fail")
+        return
 
 @app.route("/dashboard")
 @app.route('/')
 def home():
-    get_socket_state()
     return render_template('index.html')
 
 @app.route("/dashboard/data")
@@ -85,16 +98,16 @@ def get_utilization_data():
         latest_ef = round(data['hydra:member'][-1].get('emissionfactor', 0), 3) if data.get('hydra:member') else 0
 
         socket_state = get_socket_state()
+        power_state = False
         if socket_state != None:
             best_charging_slots = best_time_slots(bar_data[(socket_state + 2):30], app_data.get('car_charging_hours', 0))
-            print(socket_state)
             for slot in best_charging_slots:
-                print(slot.get("label")[:2])
-                if slot.get("label")[:2] == str(socket_state):
-                    print("jippy")
+                if int(slot.get("label")[:2]) == socket_state:
+                    power_state = True
         else: 
             best_charging_slots = None
 
+        post_power_state(power_state)
 
 
         return jsonify({
