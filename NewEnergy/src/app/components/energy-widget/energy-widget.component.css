@@ -1,0 +1,162 @@
+
+/* src/app/components/energy-widget/energy-widget.component.css */
+.energy-widget {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all var(--transition-speed) ease-in-out;
+  border-left: 5px solid var(--primary-color); /* Accent border */
+  position: relative; /* For pseudo-elements or absolute positioning inside */
+}
+
+.energy-widget:hover {
+  border-left-color: var(--accent-color);
+}
+
+.summary-widget { /* Slightly different styling for summary cards */
+  border-left-width: 6px;
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(var(--text-secondary-color-rgb, 176, 176, 176), 0.2);
+}
+
+.widget-title {
+  font-size: 1.3em;
+  font-weight: 600;
+  color: var(--text-primary-color);
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.title-icon {
+  margin-right: 10px;
+  color: var(--primary-color);
+  font-size: 1.2em;
+  animation: iconPop 0.5s ease-out;
+}
+
+@keyframes iconPop {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.widget-trend {
+  font-size: 1.2em;
+  padding: 5px 8px;
+  border-radius: var(--border-radius);
+}
+
+.trend-up { color: var(--success-color); background-color: rgba(40, 167, 69, 0.1); }
+.trend-down { color: var(--danger-color); background-color: rgba(220, 53, 69, 0.1); }
+.trend-stable { color: var(--warning-color); background-color: rgba(255, 193, 7, 0.1); }
+
+.widget-body {
+  flex-grow: 1;
+}
+
+.widget-value {
+  font-size: 2.5em; /* Larger for summary, adjust as needed */
+  font-weight: 700;
+  color: var(--text-primary-color);
+  margin: 10px 0;
+  display: flex;
+  align-items: baseline; /* Align value and unit nicely */
+  transition: color 0.3s ease, transform 0.3s ease; /* For value change animation */
+}
+
+.summary-widget .widget-value {
+  font-size: 2.8em;
+}
+
+.widget-unit {
+  font-size: 0.5em; /* Smaller unit text */
+  font-weight: 400;
+  color: var(--text-secondary-color);
+  margin-left: 8px;
+  text-transform: uppercase;
+}
+
+/* Value change animations */
+.value-increased {
+  color: var(--success-color) !important;
+  transform: scale(1.05);
+}
+.value-decreased {
+  color: var(--danger-color) !important;
+  transform: scale(0.95);
+}
+
+
+.widget-last-updated, .widget-details {
+  font-size: 0.9em;
+  color: var(--text-secondary-color);
+  margin-top: 5px;
+}
+
+.widget-last-updated i {
+  margin-right: 5px;
+}
+
+.widget-chart-container {
+  margin-top: 15px;
+  height: 100px; /* Example height, adjust as needed */
+}
+
+.widget-footer {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(var(--text-secondary-color-rgb, 176, 176, 176), 0.1);
+  text-align: right;
+}
+
+.details-link {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--transition-speed) ease;
+}
+
+.details-link:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+.details-link i {
+  margin-left: 5px;
+  transition: transform var(--transition-speed) ease;
+}
+
+.details-link:hover i {
+  transform: translateX(3px);
+}
+
+/* Text color overrides for Font Awesome icons within trends */
+.text-success { color: var(--success-color) !important; }
+.text-danger { color: var(--danger-color) !important; }
+.text-warning { color: var(--warning-color) !important; }
+
+
+/* Define --text-secondary-color-rgb for rgba usage */
+:root {
+  /* Assuming --text-secondary-color is #b0b0b0 */
+  --text-secondary-color-rgb: 176, 176, 176;
+}
+
+@media (max-width: 768px) {
+  .widget-title {
+    font-size: 1.1em;
+  }
+  .widget-value {
+    font-size: 2em;
+  }
+  .summary-widget .widget-value {
+    font-size: 2.2em;
+  }
+}
