@@ -8,6 +8,19 @@ load_dotenv()
 
 app = Flask(__name__)
 
+
+def best_time_slots(data, hours):
+    sorted_data = sorted(data, key=lambda x: x['emission_factor'])
+    subset = sorted_data[:hours]
+    sorted_data = sorted(subset, key=lambda x: x['time_range'])
+    return sorted_data
+
+def filter_time(data):
+
+
+    return filterd_data
+
+
 @app.route("/dashboard")
 def get_utilization_data():
     try:
@@ -50,7 +63,9 @@ def get_utilization_data():
                 'time_range': f"{from_time} - {to_time}"
             })
 
-        return jsonify(formatted_data)
+        one = best_time_slots(formatted_data, 7)
+        new = formatted_data[6:30]
+        return jsonify(new)
 
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"API request failed: {str(e)}"}), 500
