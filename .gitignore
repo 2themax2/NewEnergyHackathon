@@ -6,3 +6,6 @@ backend/package-lock.json
 backend/package.json
 .env
 backend/__pycache__/app.cpython-312.pyc
+/node_modules
+package-lock.json
+package.json
