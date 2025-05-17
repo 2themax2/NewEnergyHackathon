@@ -171,7 +171,6 @@ def get_utilization_data():
 
         post_power_state(power_state)
 
-
         return jsonify({
             'bar_data': bar_data,
             'latest_ef': latest_ef,
@@ -281,6 +280,7 @@ def get_utilization_data1():
             else:
                 dict_end_time = 24
 
+            print(dict_end_time)
             best_charging_slots = best_time_slotsmax(bar_data[(socket_state + 2): 30 - dict_end_time ], app_data.get('car_charging_hours', 0))
             for slot in best_charging_slots:
                 if int(slot.get("label")[:2]) == socket_state:
