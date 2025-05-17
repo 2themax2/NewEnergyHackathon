@@ -110,7 +110,59 @@ def get_utilization_data():
         socket_state = get_socket_state()
         power_state = False
         if socket_state != None:
-            best_charging_slots = best_time_slotsmin(bar_data[(socket_state + 2):30], app_data.get('car_charging_hours', 0))
+            end_time = int(app_data.get('hard_charge_end_time', 0)[:2])
+            if end_time == 4:
+                dict_end_time = 0
+            elif end_time == 3:
+                dict_end_time = 1
+            elif end_time == 2:
+                dict_end_time = 2
+            elif end_time == 1:
+                dict_end_time = 3 
+            elif end_time == 0:
+                dict_end_time = 4
+            elif end_time == 23:
+                dict_end_time = 5
+            elif end_time == 22:
+                dict_end_time = 6
+            elif end_time == 21:
+                dict_end_time = 7
+            elif end_time == 20:
+                dict_end_time = 8
+            elif end_time == 19:
+                dict_end_time = 9
+            elif end_time == 18:
+                dict_end_time = 10
+            elif end_time == 17:
+                dict_end_time = 11
+            elif end_time == 16:
+                dict_end_time = 12
+            elif end_time == 15:
+                dict_end_time = 13
+            elif end_time == 14:
+                dict_end_time = 14
+            elif end_time == 13:
+                dict_end_time = 15
+            elif end_time == 12:
+                dict_end_time = 16
+            elif end_time == 11:
+                dict_end_time = 17
+            elif end_time == 10:
+                dict_end_time = 18
+            elif end_time == 9:
+                dict_end_time = 19
+            elif end_time == 8:
+                dict_end_time = 20
+            elif end_time == 7:
+                dict_end_time = 21
+            elif end_time == 6:
+                dict_end_time = 22
+            elif end_time == 5:
+                dict_end_time = 23
+            else:
+                dict_end_time = 24
+
+            best_charging_slots = best_time_slotsmin(bar_data[(socket_state + 2): 30 - dict_end_time ], app_data.get('car_charging_hours', 0))
             for slot in best_charging_slots:
                 if int(slot.get("label")[:2]) == socket_state:
                     power_state = True
@@ -177,7 +229,59 @@ def get_utilization_data1():
         socket_state = get_socket_state()
         power_state = False
         if socket_state != None:
-            best_charging_slots = best_time_slotsmax(bar_data[(socket_state + 2):30], app_data.get('car_charging_hours', 0))
+            end_time = int(app_data.get('hard_charge_end_time', 0)[:2])
+            if end_time == 4:
+                dict_end_time = 0
+            elif end_time == 3:
+                dict_end_time = 1
+            elif end_time == 2:
+                dict_end_time = 2
+            elif end_time == 1:
+                dict_end_time = 3 
+            elif end_time == 0:
+                dict_end_time = 4
+            elif end_time == 23:
+                dict_end_time = 5
+            elif end_time == 22:
+                dict_end_time = 6
+            elif end_time == 21:
+                dict_end_time = 7
+            elif end_time == 20:
+                dict_end_time = 8
+            elif end_time == 19:
+                dict_end_time = 9
+            elif end_time == 18:
+                dict_end_time = 10
+            elif end_time == 17:
+                dict_end_time = 11
+            elif end_time == 16:
+                dict_end_time = 12
+            elif end_time == 15:
+                dict_end_time = 13
+            elif end_time == 14:
+                dict_end_time = 14
+            elif end_time == 13:
+                dict_end_time = 15
+            elif end_time == 12:
+                dict_end_time = 16
+            elif end_time == 11:
+                dict_end_time = 17
+            elif end_time == 10:
+                dict_end_time = 18
+            elif end_time == 9:
+                dict_end_time = 19
+            elif end_time == 8:
+                dict_end_time = 20
+            elif end_time == 7:
+                dict_end_time = 21
+            elif end_time == 6:
+                dict_end_time = 22
+            elif end_time == 5:
+                dict_end_time = 23
+            else:
+                dict_end_time = 24
+
+            best_charging_slots = best_time_slotsmax(bar_data[(socket_state + 2): 30 - dict_end_time ], app_data.get('car_charging_hours', 0))
             for slot in best_charging_slots:
                 if int(slot.get("label")[:2]) == socket_state:
                     power_state = True
@@ -244,7 +348,59 @@ def get_utilization_data2():
         socket_state = get_socket_state()
         power_state = False
         if socket_state != None:
-            best_charging_slots = best_time_slotsmin(bar_data[(socket_state + 2):30], app_data.get('car_charging_hours', 0))
+            end_time = int(app_data.get('hard_charge_end_time', 0)[:2])
+            if end_time == 4:
+                dict_end_time = 0
+            elif end_time == 3:
+                dict_end_time = 1
+            elif end_time == 2:
+                dict_end_time = 2
+            elif end_time == 1:
+                dict_end_time = 3 
+            elif end_time == 0:
+                dict_end_time = 4
+            elif end_time == 23:
+                dict_end_time = 5
+            elif end_time == 22:
+                dict_end_time = 6
+            elif end_time == 21:
+                dict_end_time = 7
+            elif end_time == 20:
+                dict_end_time = 8
+            elif end_time == 19:
+                dict_end_time = 9
+            elif end_time == 18:
+                dict_end_time = 10
+            elif end_time == 17:
+                dict_end_time = 11
+            elif end_time == 16:
+                dict_end_time = 12
+            elif end_time == 15:
+                dict_end_time = 13
+            elif end_time == 14:
+                dict_end_time = 14
+            elif end_time == 13:
+                dict_end_time = 15
+            elif end_time == 12:
+                dict_end_time = 16
+            elif end_time == 11:
+                dict_end_time = 17
+            elif end_time == 10:
+                dict_end_time = 18
+            elif end_time == 9:
+                dict_end_time = 19
+            elif end_time == 8:
+                dict_end_time = 20
+            elif end_time == 7:
+                dict_end_time = 21
+            elif end_time == 6:
+                dict_end_time = 22
+            elif end_time == 5:
+                dict_end_time = 23
+            else:
+                dict_end_time = 24
+
+            best_charging_slots = best_time_slotsmin(bar_data[(socket_state + 2): 30 - dict_end_time ], app_data.get('car_charging_hours', 0))
             for slot in best_charging_slots:
                 if int(slot.get("label")[:2]) == socket_state:
                     power_state = True
