@@ -13,11 +13,20 @@ app_data = {
     'hard_charge_end_time': '04:00'
 }
 
-def best_time_slots(data, num_slots_to_pick):
+def best_time_slotsmin(data, num_slots_to_pick):
     if not data or num_slots_to_pick <= 0:
         return []
     sorted_data_by_emission = sorted(data, key=lambda x: x['height'])
     best_emission_slots = sorted_data_by_emission[:int(num_slots_to_pick)]
+    chronological_best_slots = sorted(best_emission_slots, key=lambda x: x['label'])
+    return chronological_best_slots
+
+
+def best_time_slotsmax(data, num_slots_to_pick):
+    if not data or num_slots_to_pick <= 0:
+        return []
+    sorted_data_by_emission = sorted(data, key=lambda x: x['height'])
+    best_emission_slots = sorted_data_by_emission[-num_slots_to_pick:]
     chronological_best_slots = sorted(best_emission_slots, key=lambda x: x['label'])
     return chronological_best_slots
 
@@ -59,7 +68,7 @@ def home():
     get_socket_state()
     return render_template('index.html')
 
-@app.route("/dashboard/data")
+@app.route("/dashboard/koolstof")
 def get_utilization_data():
     try:
         url = "https://api.ned.nl/v1/utilizations"
@@ -71,8 +80,8 @@ def get_utilization_data():
             'granularitytimezone': 1,
             'classification': 1,
             'activity': 1,
-            'validfrom[strictly_before]': '2025-05-18',
-            'validfrom[after]': '2025-05-16'
+            'validfrom[strictly_before]': '2025-05-19',
+            'validfrom[after]': '2025-05-17'
         }
 
         response = requests.get(url, headers=headers, params=params)
@@ -101,7 +110,141 @@ def get_utilization_data():
         socket_state = get_socket_state()
         power_state = False
         if socket_state != None:
-            best_charging_slots = best_time_slots(bar_data[(socket_state + 2):30], app_data.get('car_charging_hours', 0))
+            best_charging_slots = best_time_slotsmin(bar_data[(socket_state + 2):30], app_data.get('car_charging_hours', 0))
+            for slot in best_charging_slots:
+                if int(slot.get("label")[:2]) == socket_state:
+                    power_state = True
+        else: 
+            best_charging_slots = None
+
+        post_power_state(power_state)
+
+
+        return jsonify({
+            'bar_data': bar_data,
+            'latest_ef': latest_ef,
+            'car_charging_hours': app_data.get('car_charging_hours'),
+            'hard_charge_end_time': app_data.get('hard_charge_end_time'),
+            'best_charging_slots': best_charging_slots
+        })
+
+    except requests.exceptions.RequestException as e:
+        print(f"API request failed: {str(e)}")
+        return jsonify({"error": f"API request failed: {str(e)}"}), 500
+    except Exception as e:
+        print(f"An error occurred in get_utilization_data: {str(e)}")
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
+@app.route("/dashboard/zon")
+def get_utilization_data1():
+    try:
+        url = "https://api.ned.nl/v1/utilizations"
+        headers = {'X-AUTH-TOKEN': os.getenv('api'), 'accept': 'application/ld+json'}
+        params = {
+            'point': 0,
+            'type': 2,
+            'granularity': 5,
+            'granularitytimezone': 1,
+            'classification': 1,
+            'activity': 1,
+            'validfrom[strictly_before]': '2025-05-19',
+            'validfrom[after]': '2025-05-17'
+        }
+
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        data = response.json()
+
+        bar_data = []
+        slot_duration_minutes = 5
+
+        if 'hydra:member' in data:
+            for item in data['hydra:member']:
+                ef = round(item.get('volume', 0), 3)
+                height = ef / 1000000
+                valid_from = item.get('validfrom')
+                valid_to = item.get('validto')
+
+                if valid_from and valid_to:
+                    from_hour = datetime.fromisoformat(valid_from).strftime('%H:%M')
+                    to_hour = datetime.fromisoformat(valid_to).strftime('%H:%M')
+                    bar_data.append({'height': height, 'label': f'{from_hour}-{to_hour}'})
+                else:
+                    bar_data.append({'height': height, 'label': ''})
+
+        latest_ef = round(data['hydra:member'][-1].get('volume', 0), 3) if data.get('hydra:member') else 0
+
+        socket_state = get_socket_state()
+        power_state = False
+        if socket_state != None:
+            best_charging_slots = best_time_slotsmax(bar_data[(socket_state + 2):30], app_data.get('car_charging_hours', 0))
+            for slot in best_charging_slots:
+                if int(slot.get("label")[:2]) == socket_state:
+                    power_state = True
+        else: 
+            best_charging_slots = None
+
+        post_power_state(power_state)
+
+
+        return jsonify({
+            'bar_data': bar_data,
+            'latest_ef': latest_ef,
+            'car_charging_hours': app_data.get('car_charging_hours'),
+            'hard_charge_end_time': app_data.get('hard_charge_end_time'),
+            'best_charging_slots': best_charging_slots
+        })
+
+    except requests.exceptions.RequestException as e:
+        print(f"API request failed: {str(e)}")
+        return jsonify({"error": f"API request failed: {str(e)}"}), 500
+    except Exception as e:
+        print(f"An error occurred in get_utilization_data: {str(e)}")
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
+@app.route("/dashboard/load")
+def get_utilization_data2():
+    try:
+        url = "https://api.ned.nl/v1/utilizations"
+        headers = {'X-AUTH-TOKEN': os.getenv('api'), 'accept': 'application/ld+json'}
+        params = {
+            'point': 0,
+            'type': 59,
+            'granularity': 5,
+            'granularitytimezone': 1,
+            'classification': 1,
+            'activity': 1,
+            'validfrom[strictly_before]': '2025-05-10',
+            'validfrom[after]': '2025-05-08'
+        }
+
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        data = response.json()
+
+        bar_data = []
+        slot_duration_minutes = 5
+
+        if 'hydra:member' in data:
+            for item in data['hydra:member']:
+                ef = round(item.get('volume', 0), 3)
+                height = ef /1000000
+                valid_from = item.get('validfrom')
+                valid_to = item.get('validto')
+
+                if valid_from and valid_to:
+                    from_hour = datetime.fromisoformat(valid_from).strftime('%H:%M')
+                    to_hour = datetime.fromisoformat(valid_to).strftime('%H:%M')
+                    bar_data.append({'height': height, 'label': f'{from_hour}-{to_hour}'})
+                else:
+                    bar_data.append({'height': height, 'label': ''})
+
+        latest_ef = round(data['hydra:member'][-1].get('volume', 0), 4) if data.get('hydra:member') else 0
+
+        socket_state = get_socket_state()
+        power_state = False
+        if socket_state != None:
+            best_charging_slots = best_time_slotsmin(bar_data[(socket_state + 2):30], app_data.get('car_charging_hours', 0))
             for slot in best_charging_slots:
                 if int(slot.get("label")[:2]) == socket_state:
                     power_state = True

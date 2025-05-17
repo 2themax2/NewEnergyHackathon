@@ -1,455 +1,518 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Just Charge It</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-<div class="app-container">
-    <header class="app-header">
-        <button class="menu-button">&#9776;</button>
-        <div class="header-center-content">
-            <svg aria-hidden="true" class="header-logo-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
-            </svg>
-            <h1>Just Charge It</h1>
-        </div>
-        <div class="header-right-placeholder"></div>
-    </header>
+ <html lang="en">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Just Charge It</title>
+     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ </head>
+ <body>
+ <div class="app-container">
+     <header class="app-header">
+         <button class="menu-button">&#9776;</button>
+         <div class="header-center-content">
+             <svg aria-hidden="true" class="header-logo-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                 <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+             </svg>
+             <h1>Just Charge It</h1>
+         </div>
+         <div class="header-right-placeholder"></div>
+     </header>
 
-    <main class="app-content">
-        <section class="dashboard-section car-section">
-            <div class="section-header">
-                <h2>Car Charging</h2>
-            </div>
-            <div class="load-status-card">
-                <h3>Fully charged at: <span id="hardChargeEndTimeDisplay">-</span></h3>
-                <div class="input-group">
-                    <label for="hardChargeTime">Set End Time:</label>
-                    <input type="time" id="hardChargeTime" name="hardChargeTime">
-                    <button onclick="setHardChargeEndTime()">Set End Time</button>
-                </div>
-                <div class="chart-container">
-                    <canvas id="emissionChart"></canvas>
-                </div>
-                <div class="info-grid">
-                    <div class="info-box">
-                        <p class="label">Status</p>
-                        <p class="value">Waiting...</p> </div>
-                    <div class="info-box">
-                        <p class="label">CO2 saved today</p>
-                        <p class="value">0.2 kg</p> </div>
-                    <div class="info-box">
-                        <p class="label">Total CO2 saved</p>
-                        <p class="value">26.8 kg</p> </div>
-                </div>
-                <div class="input-group">
-                    <label for="carHours">Charging Hours:</label>
-                    <input type="number" id="carHours" name="carHours" value="1" min="0" step="1">
-                    <button onclick="setCarChargingHours()">Set Car Hours</button>
-                </div>
-            </div>
-        </section>
+     <main class="app-content">
+         <section class="dashboard-section car-section">
+             <div class="section-header">
+                 <h2>Car Charging</h2>
+             </div>
+             <div class="load-status-card">
+                 <h3>Fully charged at: <span id="hardChargeEndTimeDisplay">-</span></h3>
+                 <div class="input-group">
+                     <label for="hardChargeTime">Set End Time:</label>
+                     <input type="time" id="hardChargeTime" name="hardChargeTime">
+                     <button onclick="setHardChargeEndTime()">Set End Time</button>
+                 </div>
+                 <div class="input-group">
+                     <label for="chartSelector">Show Chart:</label>
+                     <select id="chartSelector" onchange="updateChartData(this.value)">
+                         <option value="koolstof" selected>CO2-uitstoot</option>
+                         <option value="zon">Zonneopbrengst</option>
+                         <option value="load">Energycongestion</option>
+                     </select>
+                 </div>
+                 <div class="chart-container">
+                     <canvas id="emissionChart"></canvas>
+                 </div>
+                 <div class="info-grid">
+                     <div class="info-box">
+                         <p class="label">Status</p>
+                         <p class="value">Waiting...</p> </div>
+                     <div class="info-box">
+                         <p class="label">CO2 saved today</p>
+                         <p class="value">0.2 kg</p> </div>
+                     <div class="info-box">
+                         <p class="label">Total CO2 saved</p>
+                         <p class="value">26.8 kg</p> </div>
+                 </div>
+                 <div class="input-group">
+                     <label for="carHours">Charging Hours:</label>
+                     <input type="number" id="carHours" name="carHours" value="1" min="0" step="1">
+                     <button onclick="setCarChargingHours()">Set Car Hours</button>
+                 </div>
+             </div>
+         </section>
 
-        <section class="dashboard-section bike-battery-section">
-            <div class="section-header">
-                <h2>Bike Battery</h2>
-            </div>
-            <div class="load-status-card">
-                <div class="chart-container">
-                    <canvas id="bikeBatteryEmissionChart"></canvas>
-                </div>
-                <p>Information about your bike battery will be displayed here.</p>
-                <div class="input-group">
-                    <label for="bikeBatteryHours">Charging Hours:</label>
-                    <input type="number" id="bikeBatteryHours" name="bikeBatteryHours" value="1" min="0">
-                    <button onclick="alert('Bike Battery hours setting is for display only.')">Set Bike Battery Hours</button>
-                </div>
-            </div>
-        </section>
+         <section class="dashboard-section bike-battery-section">
+             <div class="section-header">
+                 <h2>Bike Battery</h2>
+             </div>
+             <div class="load-status-card">
+                 <div class="chart-container">
+                     <canvas id="bikeBatteryEmissionChart"></canvas>
+                 </div>
+                 <p>Information about your bike battery will be displayed here.</p>
+                 <div class="input-group">
+                     <label for="bikeBatteryHours">Charging Hours:</label>
+                     <input type="number" id="bikeBatteryHours" name="bikeBatteryHours" value="1" min="0">
+                     <button onclick="alert('Bike Battery hours setting is for display only.')">Set Bike Battery Hours</button>
+                 </div>
+             </div>
+         </section>
 
-        <section class="dashboard-section home-battery-section">
-            <div class="section-header">
-                <h2>Home Battery</h2>
-            </div>
-            <div class="load-status-card">
-                <div class="chart-container">
-                    <canvas id="homeBatteryEmissionChart"></canvas>
-                </div>
-                <p>Information about your home battery will be displayed here.</p>
-                <div class="input-group">
-                    <label for="homeBatteryHours">Charging Hours:</label>
-                    <input type="number" id="homeBatteryHours" name="homeBatteryHours" value="1" min="0">
-                    <button onclick="alert('Home Battery hours setting is for display only.')">Set Home Battery Hours</button>
-                </div>
-            </div>
-        </section>
+         <section class="dashboard-section home-battery-section">
+             <div class="section-header">
+                 <h2>Home Battery</h2>
+             </div>
+             <div class="load-status-card">
+                 <div class="chart-container">
+                     <canvas id="homeBatteryEmissionChart"></canvas>
+                 </div>
+                 <p>Information about your home battery will be displayed here.</p>
+                 <div class="input-group">
+                     <label for="homeBatteryHours">Charging Hours:</label>
+                     <input type="number" id="homeBatteryHours" name="homeBatteryHours" value="1" min="0">
+                     <button onclick="alert('Home Battery hours setting is for display only.')">Set Home Battery Hours</button>
+                 </div>
+             </div>
+         </section>
 
-    </main>
+     </main>
 
-    <footer class="app-footer">
-        <p>&copy; 2025 Smart Energy Solutions</p>
-    </footer>
-</div>
+     <footer class="app-footer">
+         <p>&copy; 2025 Smart Energy Solutions</p>
+     </footer>
+ </div>
 
-<script>
-    let emissionChartInstance = null;
-    let homeBatteryChartInstance = null;
-    let bikeBatteryChartInstance = null;
-    let lastFetchedCarHours = 1;
+ <script>
+     let emissionChartInstance = null;
+     let homeBatteryChartInstance = null;
+     let bikeBatteryChartInstance = null;
+     let lastFetchedCarHours = 1;
+     let currentChartType = 'koolstof';
 
-    const lightningBoltPlugin = {
-        id: 'lightningBoltPlugin',
-        afterDatasetsDraw(chart, args, pluginOptions) {
-            const { ctx, data, scales: { x, y } } = chart;
-            const bestLabels = pluginOptions.bestLabels || [];
+     const lightningBoltPlugin = {
+         id: 'lightningBoltPlugin',
+         afterDatasetsDraw(chart, args, pluginOptions) {
+             const { ctx, data, scales: { x, y } } = chart;
+             const bestLabels = pluginOptions.bestLabels || [];
 
-            if (bestLabels.length === 0) return;
+             if (bestLabels.length === 0) return;
 
-            ctx.save();
-            ctx.font = '18px Arial';
-            ctx.fillStyle = 'orange';
-            ctx.textAlign = 'center';
+             ctx.save();
+             ctx.font = '18px Arial';
+             ctx.fillStyle = 'orange';
+             ctx.textAlign = 'center';
 
-            const datasetMeta = chart.getDatasetMeta(0);
+             const datasetMeta = chart.getDatasetMeta(0);
 
-            data.labels.forEach((label, index) => {
-                if (bestLabels.includes(label)) {
-                    if (datasetMeta.data[index]) {
-                        const barElement = datasetMeta.data[index];
-                        const barTopY = barElement.y;
-                        const iconX = barElement.x;
-                        let iconY = barTopY - 8;
+             data.labels.forEach((label, index) => {
+                 if (bestLabels.includes(label)) {
+                     if (datasetMeta.data[index]) {
+                         const barElement = datasetMeta.data[index];
+                         const barTopY = barElement.y;
+                         const iconX = barElement.x;
+                         let iconY = barTopY - 8;
 
-                        if (barElement.height < 10) {
-                            iconY = y.getPixelForValue(0) - 18;
-                        }
-                        if (iconY < chart.chartArea.top + 10) {
-                            iconY = chart.chartArea.top + 10;
-                        }
-                        ctx.fillText('⚡', iconX, iconY);
-                    }
-                }
-            });
-            ctx.restore();
-        }
-    };
+                         if (barElement.height < 10) {
+                             iconY = y.getPixelForValue(0) - 18;
+                         }
+                         if (iconY < chart.chartArea.top + 10) {
+                             iconY = chart.chartArea.top + 10;
+                         }
+                         ctx.fillText('⚡', iconX, iconY);
+                     }
+                 }
+             });
+             ctx.restore();
+         }
+     };
 
-    const currentTimeLinePlugin = {
-        id: 'currentTimeLinePlugin',
-        afterDatasetsDraw(chart, args, pluginOptions) {
-            const { ctx, chartArea, data, scales } = chart;
-            if (!chartArea || !data.labels || data.labels.length === 0) {
-                return;
-            }
+     const currentTimeLinePlugin = {
+         id: 'currentTimeLinePlugin',
+         afterDatasetsDraw(chart, args, pluginOptions) {
+             const { ctx, chartArea, data, scales } = chart;
+             if (!chartArea || !data.labels || data.labels.length === 0) {
+                 return;
+             }
 
-            const now = new Date();
-            const currentHour = now.getHours();
-            const currentMinute = now.getMinutes();
-            const currentTimeInMinutes = currentHour * 60 + currentMinute;
+             const now = new Date();
+             const currentHour = now.getHours();
+             const currentMinute = now.getMinutes();
+             const currentTimeInMinutes = currentHour * 60 + currentMinute;
 
-            for (let i = 0; i < data.labels.length; i++) {
-                const label = data.labels[i];
-                const parts = label.split('-');
-                if (parts.length !== 2) continue;
+             for (let i = 0; i < data.labels.length; i++) {
+                 const label = data.labels[i];
+                 const parts = label.split('-');
+                 if (parts.length !== 2) continue;
 
-                const startTimeStr = parts[0];
-                const endTimeStr = parts[1];
+                 const startTimeStr = parts[0];
+                 const endTimeStr = parts[1];
 
-                const startH = parseInt(startTimeStr.substring(0, 2));
-                const startM = parseInt(startTimeStr.substring(3, 5));
-                const slotStartTimeInMinutes = startH * 60 + startM;
+                 const startH = parseInt(startTimeStr.substring(0, 2));
+                 const startM = parseInt(startTimeStr.substring(3, 5));
+                 const slotStartTimeInMinutes = startH * 60 + startM;
 
-                const endH = parseInt(endTimeStr.substring(0, 2));
-                const endM = parseInt(endTimeStr.substring(3, 5));
-                let slotEndTimeInMinutes = endH * 60 + endM;
+                 const endH = parseInt(endTimeStr.substring(0, 2));
+                 const endM = parseInt(endTimeStr.substring(3, 5));
+                 let slotEndTimeInMinutes = endH * 60 + endM;
 
-                if (slotEndTimeInMinutes === 0 && endH === 0 && endM === 0) {
-                    slotEndTimeInMinutes = 24 * 60;
-                }
+                 if (slotEndTimeInMinutes === 0 && endH === 0 && endM === 0) {
+                     slotEndTimeInMinutes = 24 * 60;
+                 }
 
-                const slotDurationMinutes = slotEndTimeInMinutes - slotStartTimeInMinutes;
-                if (slotDurationMinutes <= 0) continue;
+                 const slotDurationMinutes = slotEndTimeInMinutes - slotStartTimeInMinutes;
+                 if (slotDurationMinutes <= 0) continue;
 
-                if (currentTimeInMinutes >= slotStartTimeInMinutes && currentTimeInMinutes < slotEndTimeInMinutes) {
-                    const barMeta = chart.getDatasetMeta(0).data[i];
-                    if (!barMeta) continue;
+                 if (currentTimeInMinutes >= slotStartTimeInMinutes && currentTimeInMinutes < slotEndTimeInMinutes) {
+                     const barMeta = chart.getDatasetMeta(0).data[i];
+                     if (!barMeta) continue;
 
-                    const timeIntoSlot = currentTimeInMinutes - slotStartTimeInMinutes;
-                    const offsetRatio = timeIntoSlot / slotDurationMinutes;
+                     const timeIntoSlot = currentTimeInMinutes - slotStartTimeInMinutes;
+                     const offsetRatio = timeIntoSlot / slotDurationMinutes;
 
-                    const lineX = barMeta.x - (barMeta.width / 2) + (offsetRatio * barMeta.width);
+                     const lineX = barMeta.x - (barMeta.width / 2) + (offsetRatio * barMeta.width);
 
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.moveTo(lineX, chartArea.top);
-                    ctx.lineTo(lineX, chartArea.bottom);
-                    ctx.strokeStyle = 'red';
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                    ctx.restore();
-                    break;
-                }
-            }
-        }
-    };
-
-
-    async function fetchData() {
-        try {
-            const response = await fetch('/dashboard/data');
-            const data = await response.json();
-
-            if (data.error) {
-                console.error("Error fetching data:", data.error);
-                document.getElementById('emissionChart').style.display = 'none';
-                document.getElementById('homeBatteryEmissionChart').style.display = 'none';
-                document.getElementById('bikeBatteryEmissionChart').style.display = 'none';
-
-                const chartContainers = document.querySelectorAll('.chart-container');
-                chartContainers.forEach(container => {
-                    let errorP = container.querySelector('.api-error-message');
-                    if (!errorP) {
-                        errorP = document.createElement('p');
-                        errorP.className = 'api-error-message';
-                        errorP.style.color = 'red';
-                        errorP.style.textAlign = 'center';
-                        container.appendChild(errorP);
-                    }
-                    errorP.textContent = 'Failed to load emission data. Please try again later.';
-                });
-                return;
-            }
-
-            document.querySelectorAll('.api-error-message').forEach(el => el.remove());
-            document.getElementById('emissionChart').style.display = 'block';
-            document.getElementById('homeBatteryEmissionChart').style.display = 'block';
-            document.getElementById('bikeBatteryEmissionChart').style.display = 'block';
+                     ctx.save();
+                     ctx.beginPath();
+                     ctx.moveTo(lineX, chartArea.top);
+                     ctx.lineTo(lineX, chartArea.bottom);
+                     ctx.strokeStyle = 'red';
+                     ctx.lineWidth = 2;
+                     ctx.stroke();
+                     ctx.restore();
+                     break;
+                 }
+             }
+         }
+     };
 
 
-            if (data.bar_data && data.bar_data.length > 0) {
-                const fullDayData = data.bar_data.slice(0, Math.min(data.bar_data.length, 24 * 12));
-                const dataForChartDisplay = fullDayData.slice(6, 30);
-                updateAllCharts(dataForChartDisplay, data.best_charging_slots || []);
-            } else {
-                console.warn("No bar data received or data is empty.");
-                updateAllCharts([], data.best_charging_slots || []);
-            }
+     async function fetchData(endpoint = '/dashboard/koolstof') {
+         try {
+             const response = await fetch(endpoint);
+             const data = await response.json();
 
-            console.log("Latest Emission Factor:", data.latest_ef);
-            if (data.car_charging_hours !== undefined) {
-                lastFetchedCarHours = parseFloat(data.car_charging_hours);
-                document.getElementById('carHours').value = lastFetchedCarHours;
-            }
+             if (data.error) {
+                 console.error("Error fetching data:", data.error);
+                 document.getElementById('emissionChart').style.display = 'none';
+                 document.getElementById('homeBatteryEmissionChart').style.display = 'none';
+                 document.getElementById('bikeBatteryEmissionChart').style.display = 'none';
 
-            if (data.hard_charge_end_time) {
-                document.getElementById('hardChargeTime').value = data.hard_charge_end_time;
-                document.getElementById('hardChargeEndTimeDisplay').textContent = data.hard_charge_end_time;
-            } else {
-                document.getElementById('hardChargeEndTimeDisplay').textContent = "Not set";
-            }
+                 const chartContainers = document.querySelectorAll('.chart-container');
+                 chartContainers.forEach(container => {
+                     let errorP = container.querySelector('.api-error-message');
+                     if (!errorP) {
+                         errorP = document.createElement('p');
+                         errorP.className = 'api-error-message';
+                         errorP.style.color = 'red';
+                         errorP.style.textAlign = 'center';
+                         container.appendChild(errorP);
+                     }
+                     errorP.textContent = 'Failed to load data. Please try again later.';
+                 });
+                 return;
+             }
 
-        } catch (error) {
-            console.error("Fetch error:", error);
-            const chartContainers = document.querySelectorAll('.chart-container');
-            chartContainers.forEach(container => {
-                let errorP = container.querySelector('.api-error-message');
-                if (!errorP) {
-                    errorP = document.createElement('p');
-                    errorP.className = 'api-error-message';
-                    errorP.style.color = 'red';
-                    errorP.style.textAlign = 'center';
-                    container.appendChild(errorP);
-                }
-                errorP.textContent = 'Error fetching dashboard data. Please check your connection.';
-            });
-            updateAllCharts([], []);
-        }
-    }
-
-    function updateAllCharts(barDataToDisplay, allBestChargingSlots) {
-        updateMainChart(barDataToDisplay, allBestChargingSlots);
-        updateSecondaryChart('homeBatteryEmissionChart', barDataToDisplay, homeBatteryChartInstance, (newInstance) => homeBatteryChartInstance = newInstance);
-        updateSecondaryChart('bikeBatteryEmissionChart', barDataToDisplay, bikeBatteryChartInstance, (newInstance) => bikeBatteryChartInstance = newInstance);
-    }
+             document.querySelectorAll('.api-error-message').forEach(el => el.remove());
+             document.getElementById('emissionChart').style.display = 'block';
+             document.getElementById('homeBatteryEmissionChart').style.display = 'block';
+             document.getElementById('bikeBatteryEmissionChart').style.display = 'block';
 
 
-    function createChartConfig(barDataToDisplay, plugins, bestSlotLabelsForHighlight = []) {
-        const labels = barDataToDisplay.map(item => item.label);
-        const heights = barDataToDisplay.map(item => item.height);
+             if (data.bar_data && data.bar_data.length > 0) {
+                 const fullDayData = data.bar_data.slice(0, Math.min(data.bar_data.length, 24 * 12));
+                 const dataForChartDisplay = fullDayData.slice(6, 30);
+                 updateAllCharts(dataForChartDisplay, data.best_charging_slots || []);
+             } else {
+                 console.warn("No bar data received or data is empty.");
+                 updateAllCharts([], data.best_charging_slots || []);
+             }
 
-        const config = {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Emission Factor (gCO2/kWh)',
-                    data: heights,
-                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        display: true,
-                        title: {
-                            display: true,
-                            text: 'Emission Factor'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        },
-                        title: {
-                            display: true,
-                            text: 'Time Slot'
-                        },
-                        ticks: {
-                            autoSkip: true,
-                            maxRotation: 45,
-                            minRotation: 45,
-                            font: {
-                                size: 10
-                            },
-                            callback: function(value, index, ticks) {
-                                const label = this.getLabelForValue(value);
-                                if (typeof label === 'string' && label.includes('-')) {
-                                    return label.split('-')[0];
-                                }
-                                return label;
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.y !== null) {
-                                    label += context.parsed.y + ' gCO2eq/kWh';
-                                }
-                                return label;
-                            }
-                        }
-                    }
-                }
-            },
-            plugins: plugins
-        };
+             console.log("Latest Data:", data.latest_ef);
+             if (data.car_charging_hours !== undefined) {
+                 lastFetchedCarHours = parseFloat(data.car_charging_hours);
+                 document.getElementById('carHours').value = lastFetchedCarHours;
+             }
 
-        if (bestSlotLabelsForHighlight.length > 0 && config.options.plugins.lightningBoltPlugin !== false) {
-            config.options.plugins.lightningBoltPlugin = { bestLabels: bestSlotLabelsForHighlight };
-        } else {
-            delete config.options.plugins.lightningBoltPlugin;
-        }
-        return config;
-    }
+             if (data.hard_charge_end_time) {
+                 document.getElementById('hardChargeTime').value = data.hard_charge_end_time;
+                 document.getElementById('hardChargeEndTimeDisplay').textContent = data.hard_charge_end_time;
+             } else {
+                 document.getElementById('hardChargeEndTimeDisplay').textContent = "Not set";
+             }
 
-    function updateMainChart(barDataToDisplay, allBestChargingSlots) {
-        const ctx = document.getElementById('emissionChart').getContext('2d');
-        const bestSlotLabelsForHighlight = allBestChargingSlots.map(slot => slot.label);
+         } catch (error) {
+             console.error("Fetch error:", error);
+             const chartContainers = document.querySelectorAll('.chart-container');
+             chartContainers.forEach(container => {
+                 let errorP = container.querySelector('.api-error-message');
+                 if (!errorP) {
+                     errorP = document.createElement('p');
+                     errorP.className = 'api-error-message';
+                     errorP.style.color = 'red';
+                     errorP.style.textAlign = 'center';
+                     container.appendChild(errorP);
+                 }
+                 errorP.textContent = 'Error fetching dashboard data. Please check your connection.';
+             });
+             updateAllCharts([], []);
+         }
+     }
 
-        if (emissionChartInstance) {
-            emissionChartInstance.destroy();
-        }
-        const chartPlugins = [lightningBoltPlugin, currentTimeLinePlugin];
-        const config = createChartConfig(barDataToDisplay, chartPlugins, bestSlotLabelsForHighlight);
-        emissionChartInstance = new Chart(ctx, config);
-    }
+     function updateChartData(selectedValue) {
+         currentChartType = selectedValue;
+         let apiUrl;
+         switch (selectedValue) {
+             case 'koolstof':
+                 apiUrl = '/dashboard/koolstof';
+                 break;
+             case 'zon':
+                 apiUrl = '/dashboard/zon';
+                 break;
+             case 'load':
+                 apiUrl = '/dashboard/load';
+                 break;
+             default:
+                 apiUrl = '/dashboard/koolstof';
+                 break;
+         }
+         fetchData(apiUrl);
+     }
 
-    function updateSecondaryChart(canvasId, barDataToDisplay, chartInstance, setInstanceCallback) {
-        const ctx = document.getElementById(canvasId).getContext('2d');
-        if (chartInstance) {
-            chartInstance.destroy();
-        }
-        const chartPlugins = [currentTimeLinePlugin];
-        const config = createChartConfig(barDataToDisplay, chartPlugins);
-        config.options.plugins.lightningBoltPlugin = false; // Explicitly disable for secondary charts
-
-        const newInstance = new Chart(ctx, config);
-        setInstanceCallback(newInstance);
-    }
+     function updateAllCharts(barDataToDisplay, allBestChargingSlots) {
+         updateMainChart(barDataToDisplay, allBestChargingSlots);
+         updateSecondaryChart('homeBatteryEmissionChart', barDataToDisplay, homeBatteryChartInstance, (newInstance) => homeBatteryChartInstance = newInstance);
+         updateSecondaryChart('bikeBatteryEmissionChart', barDataToDisplay, bikeBatteryChartInstance, (newInstance) => bikeBatteryChartInstance = newInstance);
+     }
 
 
-    async function setCarChargingHours() {
-        const hoursInput = document.getElementById('carHours');
-        const hours = hoursInput.value;
+     function createChartConfig(barDataToDisplay, plugins, bestSlotLabelsForHighlight = []) {
+         const labels = barDataToDisplay.map(item => item.label);
+         const heights = barDataToDisplay.map(item => item.height);
+         let labelText = '';
+         switch (currentChartType) {
+             case 'koolstof':
+                 labelText = 'CO2 Emission (gCO2eq/kWh)';
+                 break;
+             case 'zon':
+                 labelText = 'Solar Power (kW)';
+                 break;
+             case 'load':
+                 labelText = 'Energy Congestion Level'; // Adjust as needed
+                 break;
+             default:
+                 labelText = 'CO2 Emission (gCO2eq/kWh)';
+                 break;
+         }
 
-        if (hours === "" || parseFloat(hours) < 0) {
-            alert("Please enter a valid non-negative number for car charging hours.");
-            hoursInput.value = lastFetchedCarHours;
-            return;
-        }
-        try {
-            const response = await fetch('/set_car_hours', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ hours: parseFloat(hours) }),
-            });
-            const result = await response.json();
-            if (response.ok) {
-                console.log("Car charging hours updated:", result.current_hours);
-                lastFetchedCarHours = parseFloat(result.current_hours);
-                fetchData();
-            } else {
-                alert("Error: " + result.error);
-                hoursInput.value = lastFetchedCarHours;
-            }
-        } catch (error) {
-            console.error("Error setting car charging hours:", error);
-            alert("Failed to set car charging hours. Please try again.");
-            hoursInput.value = lastFetchedCarHours;
-        }
-    }
+         const config = {
+             type: 'bar',
+             data: {
+                 labels: labels,
+                 datasets: [{
+                     label: labelText,
+                     data: heights,
+                     backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                     borderColor: 'rgba(54, 162, 235, 1)',
+                     borderWidth: 1
+                 }]
+             },
+             options: {
+                 responsive: true,
+                 maintainAspectRatio: false,
+                 scales: {
+                     y: {
+                         beginAtZero: true,
+                         display: true,
+                         title: {
+                             display: true,
+                             text: labelText
+                         }
+                     },
+                     x: {
+                         grid: {
+                             display: false
+                         },
+                         title: {
+                             display: true,
+                             text: 'Time Slot'
+                         },
+                         ticks: {
+                             autoSkip: true,
+                             maxRotation: 45,
+                             minRotation: 45,
+                             font: {
+                                 size: 10
+                             },
+                             callback: function(value, index, ticks) {
+                                 const label = this.getLabelForValue(value);
+                                 if (typeof label === 'string' && label.includes('-')) {
+                                     return label.split('-')[0];
+                                 }
+                                 return label;
+                             }
+                         }
+                     }
+                 },
+                 plugins: {
+                     legend: {
+                         display: false
+                     },
+                     tooltip: {
+                         callbacks: {
+                             label: function(context) {
+                                 let label = context.dataset.label || '';
+                                 if (label) {
+                                     label += ': ';
+                                 }
+                                 if (context.parsed.y !== null) {
+                                     label += context.parsed.y;
+                                     if (currentChartType === 'koolstof') {
+                                         label += ' gCO2eq/kWh';
+                                     } else if (currentChartType === 'zon') {
+                                         label += ' kW';
+                                     }
+                                 }
+                                 return label;
+                             }
+                         }
+                     }
+                 }
+             },
+             plugins: plugins
+         };
 
-    async function setHardChargeEndTime() {
-        const timeValue = document.getElementById('hardChargeTime').value;
-        if (!timeValue) {
-            alert("Please select a valid end time.");
-            return;
-        }
-        try {
-            const response = await fetch('/set_hard_charge_end_time', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ time: timeValue }),
-            });
-            const result = await response.json();
-            if (response.ok) {
-                console.log("Hard charge end time updated:", result.current_time);
-                document.getElementById('hardChargeEndTimeDisplay').textContent = result.current_time;
-                fetchData();
-            } else {
-                alert("Error: " + result.error);
-            }
-        } catch (error) {
-            console.error("Error setting hard charge end time:", error);
-            alert("Failed to set hard charge end time. Please try again.");
-        }
-    }
+         if (bestSlotLabelsForHighlight.length > 0 && config.options.plugins.lightningBoltPlugin !== false) {
+             config.options.plugins.lightningBoltPlugin = { bestLabels: bestSlotLabelsForHighlight };
+         } else {
+             delete config.options.plugins.lightningBoltPlugin;
+         }
+         return config;
+     }
 
-    fetchData();
-    setInterval(fetchData, 600000);
-</script>
-</body>
-</html>
+     function updateMainChart(barDataToDisplay, allBestChargingSlots) {
+         const ctx = document.getElementById('emissionChart').getContext('2d');
+         const bestSlotLabelsForHighlight = allBestChargingSlots.map(slot => slot.label);
+
+         if (emissionChartInstance) {
+             emissionChartInstance.destroy();
+         }
+         const chartPlugins = [lightningBoltPlugin, currentTimeLinePlugin];
+         const config = createChartConfig(barDataToDisplay, chartPlugins, bestSlotLabelsForHighlight);
+         emissionChartInstance = new Chart(ctx, config);
+     }
+
+     function updateSecondaryChart(canvasId, barDataToDisplay, chartInstance, setInstanceCallback) {
+         const ctx = document.getElementById(canvasId).getContext('2d');
+         if (chartInstance) {
+             chartInstance.destroy();
+         }
+         const chartPlugins = [currentTimeLinePlugin];
+         const config = createChartConfig(barDataToDisplay, chartPlugins);
+         config.options.plugins.lightningBoltPlugin = false; // Explicitly disable for secondary charts
+
+         const newInstance = new Chart(ctx, config);
+         setInstanceCallback(newInstance);
+     }
+
+
+     async function setCarChargingHours() {
+         const hoursInput = document.getElementById('carHours');
+         const hours = hoursInput.value;
+
+         if (hours === "" || parseFloat(hours) < 0) {
+             alert("Please enter a valid non-negative number for car charging hours.");
+             hoursInput.value = lastFetchedCarHours;
+             return;
+         }
+         try {
+             const response = await fetch('/set_car_hours', {
+                 method: 'POST',
+                 headers: {
+                     'Content-Type': 'application/json',
+                 },
+                 body: JSON.stringify({ hours: parseFloat(hours) }),
+             });
+             const result = await response.json();
+             if (response.ok) {
+                 console.log("Car charging hours updated:", result.current_hours);
+                 lastFetchedCarHours = parseFloat(result.current_hours);
+                 fetchData(getApiUrl());
+             } else {
+                 alert("Error: " + result.error);
+                 hoursInput.value = lastFetchedCarHours;
+             }
+         } catch (error) {
+             console.error("Error setting car charging hours:", error);
+             alert("Failed to set car charging hours. Please try again.");
+             hoursInput.value = lastFetchedCarHours;
+         }
+     }
+
+     async function setHardChargeEndTime() {
+         const timeValue = document.getElementById('hardChargeTime').value;
+         if (!timeValue) {
+             alert("Please select a valid end time.");
+             return;
+         }
+         try {
+             const response = await fetch('/set_hard_charge_end_time', {
+                 method: 'POST',
+                 headers: {
+                     'Content-Type': 'application/json',
+                 },
+                 body: JSON.stringify({ time: timeValue }),
+             });
+             const result = await response.json();
+             if (response.ok) {
+                 console.log("Hard charge end time updated:", result.current_time);
+                 document.getElementById('hardChargeEndTimeDisplay').textContent = result.current_time;
+                 fetchData(getApiUrl());
+             } else {
+                 alert("Error: " + result.error);
+             }
+         } catch (error) {
+             console.error("Error setting hard charge end time:", error);
+             alert("Failed to set hard charge end time. Please try again.");
+         }
+     }
+
+     function getApiUrl() {
+         switch (currentChartType) {
+             case 'koolstof':
+                 return '/dashboard/koolstof';
+             case 'zon':
+                 return '/dashboard/zon';
+             case 'load':
+                 return '/dashboard/load';
+             default:
+                 return '/dashboard/koolstof';
+         }
+     }
+
+     // Initial data fetch
+     fetchData();
+     setInterval(() => fetchData(getApiUrl()), 600000);
+ </script>
+ </body>
+ </html>
